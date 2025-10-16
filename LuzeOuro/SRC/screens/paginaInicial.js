@@ -3,14 +3,15 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, ScrollView }
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { supabase } from '../supabaseClient';
 
 
 
 const categories = [
-  { id: "1", name: "Anéis", icon: "diamond" },
-  { id: "2", name: "Colares", icon: "star" },
-  { id: "3", name: "Relógios", icon: "clock" },
-  { id: "4", name: "Brincos", icon: "crown" },
+  { id: "1", name: "Anéis", icon: "diamond", screen: "PaginaAneis" },
+  { id: "2", name: "Colares", icon: "star", screen: "PaginaColares" },
+  { id: "3", name: "Relógios", icon: "clock", screen: "PaginaRelogios" },
+  { id: "4", name: "Brincos", icon: "crown", screen: "PaginaBrincos" },
 ];
 
 const featuredProducts = [
@@ -61,8 +62,18 @@ const launches = [
   },
 ];
 
-export default function App() {
+export default function App({navigation}) {
   const [favorites, setFavorites] = useState([]);
+  
+  const renderCategory = ({ item }) => (
+    <TouchableOpacity
+      style={{ margin: 10, alignItems: "center" }}
+      onPress={() => navigation.navigate(item.screen)} // Redireciona para a tela definida
+    >
+      <MaterialCommunityIcons name={item.icon} size={24} color="#7a4f9e" />
+      <Text style={{ color: "#7a4f9e", marginTop: 5 }}>{item.name}</Text>
+    </TouchableOpacity>
+  );
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
@@ -70,13 +81,13 @@ export default function App() {
     );
   };
 
-  const renderCategory = ({ item }) => (
-    <TouchableOpacity style={styles.categoryBtn}>
-      {/* Usando MaterialCommunityIcons para poder usar icones do tipo "diamond", "star", etc */}
-      <MaterialCommunityIcons name={item.icon} size={24} color="#7a4f9e" />
-      <Text style={styles.categoryText}>{item.name}</Text>
-    </TouchableOpacity>
-  );
+  // const renderCategory = ({ item }) => (
+  //   <TouchableOpacity style={styles.categoryBtn}>
+  //     {/* Usando MaterialCommunityIcons para poder usar icones do tipo "diamond", "star", etc */}
+  //     <MaterialCommunityIcons name={item.icon} size={24} color="#7a4f9e" />
+  //     <Text style={styles.categoryText}>{item.name}</Text>
+  //   </TouchableOpacity>
+  // );
 
   const renderProductItem = ({ item }) => (
     <View style={styles.productCard}>
@@ -101,7 +112,10 @@ export default function App() {
         <Text style={styles.productPrice}>{item.price}</Text>
       </View>
     </View>
+    
   );
+
+
 
   return (
     <View style={styles.container}>
