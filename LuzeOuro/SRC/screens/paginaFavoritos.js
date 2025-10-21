@@ -2,57 +2,41 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRoute } from '@react-navigation/native'; // ✅ Import necessário
 
 export default function PaginaFavoritos({ route, navigation }) {
   const [favoritos, setFavoritos] = useState([]);
+  const routeAtual = useRoute(); // ✅ Para detectar tela ativa
+  const currentScreen = routeAtual.name;
 
   // 🔹 Carrega os favoritos salvos ao abrir a tela
+  useEffect(() => { carregarFavoritos(); }, []);
   useEffect(() => {
-    carregarFavoritos();
-  }, []);
-
-  // 🔹 Se veio um novo produto da rota, adiciona e salva
-  useEffect(() => {
-    if (route.params?.produto) {
-      adicionarFavorito(route.params.produto);
-    }
+    if (route.params?.produto) { adicionarFavorito(route.params.produto); }
   }, [route.params?.produto]);
 
   // === Funções ===
-
   const carregarFavoritos = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem("@favoritos");
       if (jsonValue) setFavoritos(JSON.parse(jsonValue));
-    } catch (e) {
-      console.log("Erro ao carregar favoritos:", e);
-    }
+    } catch (e) { console.log("Erro ao carregar favoritos:", e); }
   };
 
   const salvarFavoritos = async (itens) => {
-    try {
-      await AsyncStorage.setItem("@favoritos", JSON.stringify(itens));
-    } catch (e) {
-      console.log("Erro ao salvar favoritos:", e);
-    }
+    try { await AsyncStorage.setItem("@favoritos", JSON.stringify(itens)); }
+    catch (e) { console.log("Erro ao salvar favoritos:", e); }
   };
 
   const adicionarFavorito = async (novo) => {
     try {
-      // Pega os favoritos atuais do AsyncStorage
       const jsonValue = await AsyncStorage.getItem("@favoritos");
       const listaAtual = jsonValue ? JSON.parse(jsonValue) : [];
-
-      // Verifica se já existe
-      const jaExiste = listaAtual.some((item) => item.id === novo.id);
-      if (jaExiste) return; // Evita duplicatas
-
+      if (listaAtual.some((item) => item.id === novo.id)) return;
       const atualizados = [...listaAtual, novo];
       setFavoritos(atualizados);
       await salvarFavoritos(atualizados);
-    } catch (e) {
-      console.log("Erro ao adicionar favorito:", e);
-    }
+    } catch (e) { console.log("Erro ao adicionar favorito:", e); }
   };
 
   const removerItem = async (id) => {
@@ -67,7 +51,6 @@ export default function PaginaFavoritos({ route, navigation }) {
   };
 
   // === Renderização ===
-
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <Image source={{ uri: item.image }} style={styles.image} />
@@ -128,22 +111,46 @@ export default function PaginaFavoritos({ route, navigation }) {
         <Text style={styles.continueText}>Continuar explorando</Text>
       </TouchableOpacity>
 
-      {/* Navegação inferior */}
+      {/* Navegação inferior padronizada */}
       <View style={styles.bottomNav}>
         <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
-          <MaterialCommunityIcons name="home-outline" size={26} color="#7a4f9e" />
+          <MaterialCommunityIcons
+            name={currentScreen === "PaginaInicial" ? "home" : "home-outline"}
+            size={26}
+            color={currentScreen === "PaginaInicial" ? "#7a4f9e" : "#333"}
+          />
         </TouchableOpacity>
+
         <TouchableOpacity onPress={() => navigation.navigate("PaginaFiltros")}>
-          <Ionicons name="search-outline" size={26} color="#7a4f9e" />
+          <Ionicons
+            name={currentScreen === "PaginaFiltros" ? "search" : "search-outline"}
+            size={26}
+            color={currentScreen === "PaginaFiltros" ? "#7a4f9e" : "#333"}
+          />
         </TouchableOpacity>
+
         <TouchableOpacity onPress={() => navigation.navigate("PaginaFavoritos")}>
-          <Ionicons name="heart" size={26} color="#7a4f9e" />
+          <Ionicons
+            name={currentScreen === "PaginaFavoritos" ? "heart" : "heart-outline"}
+            size={26}
+            color={currentScreen === "PaginaFavoritos" ? "#7a4f9e" : "#333"}
+          />
         </TouchableOpacity>
+
         <TouchableOpacity onPress={() => navigation.navigate("PaginaCarrinho")}>
-          <Ionicons name="cart-outline" size={26} color="#7a4f9e" />
+          <Ionicons
+            name={currentScreen === "PaginaCarrinho" ? "cart" : "cart-outline"}
+            size={26}
+            color={currentScreen === "PaginaCarrinho" ? "#7a4f9e" : "#333"}
+          />
         </TouchableOpacity>
+
         <TouchableOpacity onPress={() => navigation.navigate("PaginaPerfil")}>
-          <Ionicons name="person-outline" size={26} color="#7a4f9e" />
+          <Ionicons
+            name={currentScreen === "PaginaPerfil" ? "person" : "person-outline"}
+            size={26}
+            color={currentScreen === "PaginaPerfil" ? "#7a4f9e" : "#333"}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -193,18 +200,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   continueText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
-  bottomNav: {
-    position: "absolute",
+  bottomNav: { 
+    height: 60, 
+    borderTopWidth: 1, 
+    borderTopColor: "#ddd", 
+    backgroundColor: "#fff", 
+    flexDirection: "row", 
+    justifyContent: "space-around", 
+    alignItems: "center", 
+    paddingBottom: 5,
+    position: 'absolute', 
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    borderTopWidth: 0.5,
-    borderTopColor: "#ccc",
   },
+  navItem: { flex: 1, alignItems: "center" },
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyText: { color: "#999", fontSize: 15 },
 });

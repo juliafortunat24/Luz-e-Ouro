@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions, TextInput } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { useRoute } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -59,18 +62,61 @@ const Header = () => (
   </View>
 );
 
-const FooterNav = () => (
-  <View style={styles.footerNav}>
-    <Ionicons name="home-outline" size={28} color="#9370DB" />
-    <Ionicons name="search-outline" size={28} color="#666" />
-    <Ionicons name="heart-outline" size={28} color="#666" />
-    <Ionicons name="cart-outline" size={28} color="#666" />
-    <Ionicons name="person-outline" size={28} color="#666" />
-  </View>
-);
+// --- Navbar da Página Inicial ---
+// --- Navbar da Página Inicial ---
+// Recebe currentScreen para definir o ícone ativo
+const BottomNav = ({ navigation }) => {
+  const route = useRoute(); // pega a rota atual
+  const currentScreen = route.name;
+
+  return (
+    <View style={styles.bottomNav}>
+      <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaInicial")}>
+        <MaterialCommunityIcons
+          name={currentScreen === "PaginaInicial" ? "home" : "home-outline"}
+          size={28}
+          color={currentScreen === "PaginaInicial" ? "#7a4f9e" : "#aaa"}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFiltros")}>
+        <Ionicons
+          name={currentScreen === "PaginaFiltros" ? "search" : "search-outline"}
+          size={28}
+          color={currentScreen === "PaginaFiltros" ? "#7a4f9e" : "#aaa"} // 🔹 roxo quando ativo
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFavoritos")}>
+        <Ionicons
+          name={currentScreen === "PaginaFavoritos" ? "heart" : "heart-outline"}
+          size={28}
+          color={currentScreen === "PaginaFavoritos" ? "#7a4f9e" : "#aaa"}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaCarrinho")}>
+        <Ionicons
+          name={currentScreen === "PaginaCarrinho" ? "cart" : "cart-outline"}
+          size={28}
+          color={currentScreen === "PaginaCarrinho" ? "#7a4f9e" : "#aaa"}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
+        <Ionicons
+          name={currentScreen === "PaginaPerfil" ? "person" : "person-outline"}
+          size={28}
+          color={currentScreen === "PaginaPerfil" ? "#7a4f9e" : "#aaa"}
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 
 // --- TELA PRINCIPAL ---
-export default function CatalogScreen() {
+export default function CatalogScreen({ navigation }) {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState({
     tipos: 'Todos os tipos',
@@ -160,60 +206,36 @@ export default function CatalogScreen() {
         <View style={{ height: 50 }} />
       </ScrollView>
 
-      <FooterNav />
+      {/* 👇 Substituímos o FooterNav antigo pela navbar da página inicial */}
+      <BottomNav navigation={navigation} />
     </View>
   );
 }
 
 // --- ESTILOS ---
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: '#fff', overflow: 'visible' }, // 👈 permite dropdowns visíveis
+  screenContainer: { flex: 1, backgroundColor: '#fff', overflow: 'visible' },
   scrollViewContent: { paddingBottom: 80 },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 15, paddingVertical: 10, paddingTop: 45, backgroundColor: '#fff',
-  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10, paddingTop: 45, backgroundColor: '#fff' },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
   logoImage: { width: 35, height: 35, borderRadius: 5, marginRight: 10, backgroundColor: '#8a2be2' },
   logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
-  searchContainer: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#f5f5f5',
-    borderRadius: 8, marginHorizontal: 15, marginVertical: 15, height: 45,
-  },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, marginHorizontal: 15, marginVertical: 15, height: 45 },
   searchIcon: { marginLeft: 10 },
   searchInput: { flex: 1, paddingHorizontal: 10, fontSize: 16, color: '#333' },
-  filtersBox: {
-    backgroundColor: '#f5f5f5', marginHorizontal: 15, borderRadius: 10, padding: 15,
-    zIndex: 10, overflow: 'visible', // 👈 dropdowns agora aparecem corretamente
-  },
+  filtersBox: { backgroundColor: '#f5f5f5', marginHorizontal: 15, borderRadius: 10, padding: 15, zIndex: 10, overflow: 'visible' },
   filtersHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   filtersTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 8, color: '#333' },
   filterItemWrapper: { position: 'relative', marginBottom: 10 },
-  filterDropdownButton: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 15, paddingVertical: 12,
-    borderWidth: 1, borderColor: '#e0e0e0',
-  },
+  filterDropdownButton: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 15, paddingVertical: 12, borderWidth: 1, borderColor: '#e0e0e0' },
   filterDropdownButtonActive: { borderColor: '#9370DB', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
   filterButtonText: { fontSize: 15, color: '#333' },
-  dropdownMenu: {
-    position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#fff', borderRadius: 8,
-    borderTopLeftRadius: 0, borderTopRightRadius: 0, borderWidth: 1, borderColor: '#9370DB',
-    borderTopWidth: 0, zIndex: 9999, elevation: 20, // 👈 sobre tudo
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84,
-  },
+  dropdownMenu: { position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#fff', borderRadius: 8, borderTopLeftRadius: 0, borderTopRightRadius: 0, borderWidth: 1, borderColor: '#9370DB', borderTopWidth: 0, zIndex: 9999, elevation: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84 },
   dropdownItem: { paddingHorizontal: 15, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   dropdownItemText: { fontSize: 15, color: '#333' },
-  productsGrid: {
-    flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between',
-    paddingHorizontal: 15, marginTop: 20,
-  },
-  cardContainer: {
-    width: screenWidth / 2 - 22, marginBottom: 15, backgroundColor: '#fff',
-    borderRadius: 8, overflow: 'hidden', shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.41, elevation: 2,
-  },
+  productsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 15, marginTop: 20 },
+  cardContainer: { width: screenWidth / 2 - 22, marginBottom: 15, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.41, elevation: 2 },
   imageWrapper: { position: 'relative', width: '100%', height: screenWidth / 2 - 22 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   heartIcon: { position: 'absolute', top: 8, right: 8, padding: 5 },
@@ -222,9 +244,6 @@ const styles = StyleSheet.create({
   productType: { fontSize: 13, color: '#666', marginBottom: 2 },
   productTitle: { fontSize: 14, fontWeight: '600', marginBottom: 5, color: '#333' },
   productPrice: { fontSize: 16, fontWeight: 'bold', color: '#8a2be2' },
-  footerNav: {
-    flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center',
-    paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0',
-    backgroundColor: '#fff', position: 'absolute', bottom: 0, width: '100%', height: 55,
-  },
+  bottomNav: { height: 60, borderTopWidth: 1, borderTopColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5, position: "absolute", bottom: 0, width: "100%" },
+  navItem: { flex: 1, alignItems: "center" },
 });
