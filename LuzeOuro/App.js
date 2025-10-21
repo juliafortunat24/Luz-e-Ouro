@@ -5,10 +5,17 @@ import { supabase } from './SRC/supabaseClient';
 import Login from './SRC/screens/login';
 import Cadastro from './SRC/screens/cadastro';
 import PaginaInicial from './SRC/screens/paginaInicial';
-import PaginaRelogios from './SRC/screens/paginaRelogios';
-import PaginaAneis from './SRC/screens/paginaAneis';
-import PaginaColares from './SRC/screens/paginaColares';
-import PaginaBrincos from './SRC/screens/paginaBrincos';
+import PaginaRelogios from './SRC/screens/paginaRelogios.js';
+// import PaginaAneis from './SRC/screens/paginaAneis';
+// import PaginaColares from './SRC/screens/paginaColares';
+// import PaginaBrincos from './SRC/screens/paginaBrincos';
+import PaginaPerfil from './SRC/screens/paginaPerfil';
+import PaginaFavoritos from './SRC/screens/paginaFavoritos';
+import PaginaCarrinho from './SRC/screens/paginaCarrinho';
+import PaginaFiltros from './SRC/screens/paginaFiltros';
+import PaginaAdmin from './SRC/screens/paginaAdmin';
+import CadastroProdutos from './SRC/screens/cadastroProdutos';
+import Catalogo from './SRC/screens/catalogo';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,9 +45,16 @@ export default function App() {
         {session ? (<>
           <Stack.Screen name="PaginaInicial" component={PaginaInicial} />
           <Stack.Screen name="PaginaRelogios" component={PaginaRelogios} />
-          <Stack.Screen name="PaginaBrincos" component={PaginaBrincos} />
+          {/* <Stack.Screen name="PaginaBrincos" component={PaginaBrincos} />
           <Stack.Screen name="PaginaColares" component={PaginaColares} />
-          <Stack.Screen name="PaginaAneis" component={PaginaAneis} />
+          <Stack.Screen name="PaginaAneis" component={PaginaAneis} /> */}
+          <Stack.Screen name="PaginaFiltros" component={PaginaFiltros} />
+          <Stack.Screen name="PaginaCarrinho" component={PaginaCarrinho} />
+          <Stack.Screen name="PaginaFavoritos" component={PaginaFavoritos} />
+          <Stack.Screen name="PaginaPerfil" component={PaginaPerfil} />
+          <Stack.Screen name="CadastroProdutos" component={CadastroProdutos} />
+          <Stack.Screen name="PaginaAdmin" component={PaginaAdmin} />
+          <Stack.Screen name="Catalogo" component={Catalogo} />
         </>
         ) : (
           <>

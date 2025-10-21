@@ -1,40 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-// Se estiver usando Expo, você pode usar os ícones abaixo.
-// Se não estiver, você precisará instalar 'react-native-vector-icons'.
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'; 
+import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons'; 
+import { supabase } from '../supabaseClient'; 
 
 const screenWidth = Dimensions.get('window').width;
 
-// 1. Dados dos Produtos - Mock
+// Dados dos Produtos - Mock
 const productsPage1 = [
-  { id: 1, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://via.placeholder.com/150/f0e68c/000000?text=Relogio+Ouro' },
-  { id: 2, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://via.placeholder.com/150/d3d3d3/000000?text=Relogio+Misto' },
+  { id: 1, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://lojalorella.com.br/cdn/shop/files/relogio-feminino-de-luxo-brinde-exclusivo-relogio-feminino-de-luxo-importe-go-ouro-pulseira-de-cristal-646943_640x.jpg?v=1710435914' },
+  { id: 2, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://seculus.vtexassets.com/arquivos/ids/239044-800-auto?v=638319562471670000&width=800&height=auto&aspect=true' },
 ];
 
 const productsPage2 = [
-  { id: 3, type: 'Prata', title: 'Conjunto Prata', price: '540,90', image: 'https://via.placeholder.com/150/e0e0e0/000000?text=Relogio+Prata' },
-  { id: 4, type: 'Prata', title: 'Relogio Cravejado', price: '1.090,90', image: 'https://via.placeholder.com/150/ffffff/000000?text=Relogio+Cravejado' },
+  { id: 3, type: 'Prata', title: 'Conjunto Prata', price: '540,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxI5fBWItXjBrpP5LLN4gDE5U61ab_Yohz6A&s' },
+  { id: 4, type: 'Prata', title: 'Relogio Cravejado', price: '1.090,90', image: 'https://uzistore.com.br/cdn/shop/products/Relogio-Ice-Luxury-Cravejado-Prata-Estilo-Patek-2_644x.jpg?v=1725534178' },
 ];
 
 const productsPage3 = [
-    { id: 5, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://via.placeholder.com/150/f0e68c/000000?text=Relogio+Ouro' },
-    { id: 6, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://via.placeholder.com/150/d3d3d3/000000?text=Relogio+Misto' },
-    { id: 7, type: 'Ouro', title: 'Relogio', price: '540,90', image: 'https://via.placeholder.com/150/ffd700/000000?text=Relogio+Ouro+Simples' },
-    { id: 8, type: 'Prata', title: 'Anel Zircônia', price: '800,90', image: 'https://via.placeholder.com/150/e6e6fa/000000?text=Anel+Zirconia' },
+  { id: 5, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://lojalorella.com.br/cdn/shop/files/relogio-feminino-de-luxo-brinde-exclusivo-relogio-feminino-de-luxo-importe-go-ouro-pulseira-de-cristal-646943_640x.jpg?v=1710435914' },
+  { id: 6, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://seculus.vtexassets.com/arquivos/ids/239044-800-auto?v=638319562471670000&width=800&height=auto&aspect=true' },
+  { id: 7, type: 'Ouro', title: 'Relogio', price: '540,90', image: 'https://d1o6h00a1h5k7q.cloudfront.net/imagens/img_m/35033/17043060.jpg' },
+  { id: 8, type: 'Ouro', title: 'Relogio com pedras', price: '800,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiqRvgMl4ZfMRGbOsXg0hT4V2vT8rKN1jOkw&s' },
 ];
 
-
-// 2. Componente de Item do Produto (Card)
-const ProductCard = ({ product }) => (
+// Componente de Item do Produto (Card)
+const ProductCard = ({ product, user, navigation }) => (
   <View style={styles.cardContainer}>
     <View style={styles.imageWrapper}>
       <Image source={{ uri: product.image }} style={styles.productImage} />
-      {/* Botão de Coração (Favoritar) */}
-      <TouchableOpacity style={styles.heartIcon}>
+      
+      <TouchableOpacity
+        style={styles.heartIcon}
+        onPress={() => navigation.navigate("PaginaFavoritos", { produto: product, usuario: user })}
+      >
         <Ionicons name="heart-outline" size={24} color="#666" />
       </TouchableOpacity>
-      {/* Botão de Adicionar ao Carrinho */}
+      
       <TouchableOpacity style={styles.plusIcon}>
         <MaterialCommunityIcons name="plus-circle" size={30} color="#8a2be2" />
       </TouchableOpacity>
@@ -48,263 +49,101 @@ const ProductCard = ({ product }) => (
   </View>
 );
 
-// 3. Componente de Cabeçalho (Header)
-const Header = () => (
-  <View style={styles.header}>
-    <View style={styles.logoContainer}>
-      <Image 
-        source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }} 
-        style={styles.logoImage} 
-      />
-      <View>
-        <Text style={styles.logoText}>Luz e Ouro</Text>
-        <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
-      </View>
-    </View>
-    <TouchableOpacity>
-      <Ionicons name="chatbubble-outline" size={24} color="#666" />
-    </TouchableOpacity>
-  </View>
-);
+// Componente Principal
+export default function PaginaRelogios({ navigation }) {
+  const [user, setUser] = useState(null);
 
-// 4. Componente de Oferta Especial (Somente na Imagem 2)
-const SpecialOffer = () => (
-    <View style={styles.specialOfferContainer}>
-        <Text style={styles.specialOfferTitle}>Oferta Especial</Text>
-        <Text style={styles.specialOfferText}>
-            10% de desconto em toda a coleção de prata
-        </Text>
-        <TouchableOpacity style={styles.specialOfferButton}>
-            <Text style={styles.specialOfferButtonText}>Ver Catalogo</Text>
-        </TouchableOpacity>
-    </View>
-);
+  // Pega usuário logado do Supabase
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
 
-// 5. Componente da Barra de Navegação Inferior (Footer Nav)
-const FooterNav = () => (
-    <View style={styles.footerNav}>
-        <Ionicons name="home-outline" size={28} color="#8a2be2" />
-        <Ionicons name="search-outline" size={28} color="#666" />
-        <Ionicons name="heart-outline" size={28} color="#666" />
-        <Ionicons name="cart-outline" size={28} color="#666" />
-        <Ionicons name="person-outline" size={28} color="#666" />
-    </View>
-);
-
-
-// 6. Componente Principal - Simula as duas páginas
-export default function App() {
-    // Para simular as duas páginas, vou renderizar o conteúdo de ambas
-    // em sequência, separadas por um título, para mostrar a fidelidade.
   return (
     <View style={styles.screenContainer}>
-        <Header />
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoText}>Luz e Ouro</Text>
+          </View>
+          <Text style={styles.subtitle}>Joias e Acessórios</Text>
+        </View>
+        <Ionicons name="chatbubble-ellipses-outline" size={24} color="#7a4f9e" />
+      </View>
 
-            {/* CONTEÚDO DA IMAGEM 1: Relogios Destaque e Relogios de Prata */}
-            <Text style={styles.sectionTitle}>Relogios Destaque</Text>
-            <View style={styles.productsGrid}>
-                {productsPage1.map(product => (
-                    <ProductCard key={product.id} product={product} />
-                ))}
-            </View>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <Text style={styles.sectionTitle}>Relogios Destaque</Text>
+        <View style={styles.productsGrid}>
+          {productsPage1.map(product => (
+            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
+          ))}
+        </View>
 
-            <Text style={styles.sectionTitle}>Relogios de Prata</Text>
-            <View style={styles.productsGrid}>
-                {productsPage2.map(product => (
-                    <ProductCard key={product.id} product={product} />
-                ))}
-            </View>
+        <Text style={styles.sectionTitle}>Relogios de Prata</Text>
+        <View style={styles.productsGrid}>
+          {productsPage2.map(product => (
+            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
+          ))}
+        </View>
 
-            {/* Separador (ou renderize apenas o conteúdo de uma página por vez em seu app) */}
-            <View style={styles.separator} /> 
-            
+        <Text style={styles.sectionTitle}>Relogio de Ouro</Text>
+        <View style={styles.productsGrid}>
+          {productsPage3.map(product => (
+            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
+          ))}
+        </View>
+      </ScrollView>
 
-            {/* CONTEÚDO DA IMAGEM 2: Relogio de Ouro e Oferta Especial */}
-            <Text style={styles.sectionTitle}>Relogio de Ouro</Text>
-            <View style={styles.productsGrid}>
-                {productsPage3.map(product => (
-                    <ProductCard key={product.id} product={product} />
-                ))}
-            </View>
+      {/* Bottom Navigation */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaInicial")}>
+          <MaterialCommunityIcons name="home" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
 
-            <SpecialOffer />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFiltros")}>
+          <Ionicons name="search-outline" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
 
-            <View style={{height: 50}}/> {/* Espaçamento para a barra inferior */}
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFavoritos")}>
+          <Ionicons name="heart-outline" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
 
-            
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaCarrinho")}>
+          <Ionicons name="cart-outline" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
 
-        </ScrollView>
-        <FooterNav />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
+          <Ionicons name="person-outline" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
-// 7. Estilos (StyleSheet)
+// --- Estilos ---
 const styles = StyleSheet.create({
-    screenContainer: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    scrollViewContent: {
-        paddingHorizontal: 15,
-        paddingBottom: 20,
-    },
-    // --- Header Styles ---
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        paddingTop: 40, // Espaço para StatusBar
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-        backgroundColor: '#fff',
-    },
-    logoContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    logoImage: {
-        width: 35,
-        height: 35,
-        borderRadius: 5,
-        marginRight: 10,
-        backgroundColor: '#8a2be2', // Cor de fundo do ícone na imagem
-    },
-    logoText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    logoSubtitle: {
-        fontSize: 12,
-        color: '#666',
-    },
-    // --- Section Title Styles ---
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
-        marginVertical: 15,
-        marginTop: 25,
-    },
-    // --- Grid and Card Styles ---
-    productsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        marginHorizontal: -5, // Compensação de margem
-    },
-    cardContainer: {
-        width: screenWidth / 2 - 20, // Calcula largura para 2 cards com margem
-        marginBottom: 15,
-        marginHorizontal: 5,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        overflow: 'hidden',
-        // Estilo de Sombra Suave (aproximação do Material Design)
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
-        elevation: 2,
-    },
-    imageWrapper: {
-        position: 'relative',
-        width: '100%',
-        height: 150, // Altura da imagem
-    },
-    productImage: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'cover',
-    },
-    heartIcon: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        padding: 5,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        borderRadius: 15,
-    },
-    plusIcon: {
-        position: 'absolute',
-        bottom: 10,
-        right: 10,
-        padding: 2,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 20,
-    },
-    cardDetails: {
-        padding: 10,
-        minHeight: 80, 
-    },
-    productType: {
-        fontSize: 14,
-        color: '#555',
-        marginBottom: 2,
-        fontWeight: '500',
-    },
-    productTitle: {
-        fontSize: 15,
-        fontWeight: '600',
-        marginBottom: 5,
-        color: '#333',
-    },
-    productPrice: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#8a2be2', // Cor roxa (aproximação)
-    },
-    // --- Special Offer Styles (Imagem 2) ---
-    specialOfferContainer: {
-        backgroundColor: '#f5f5f5',
-        borderRadius: 10,
-        padding: 20,
-        alignItems: 'center',
-        marginVertical: 20,
-    },
-    specialOfferTitle: {
-        fontSize: 22,
-        fontWeight: '900',
-        color: '#333',
-        marginBottom: 10,
-    },
-    specialOfferText: {
-        fontSize: 15,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    specialOfferButton: {
-        backgroundColor: '#8a2be2', // Cor roxa (aproximação)
-        paddingVertical: 10,
-        paddingHorizontal: 30,
-        borderRadius: 20,
-    },
-    specialOfferButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    // --- Footer Navigation Styles ---
-    footerNav: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        paddingVertical: 10,
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-        backgroundColor: '#fff',
-        position: 'absolute', // Fica fixo no rodapé
-        bottom: 0,
-        width: '100%',
-    },
-    separator: {
-        height: 1,
-        backgroundColor: '#eee',
-        marginVertical: 10,
-    }
+  screenContainer: { flex: 1, backgroundColor: '#fff' },
+  scrollViewContent: { paddingHorizontal: 15, paddingBottom: 20 },
+  header: { height: 60, paddingHorizontal: 15, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  logoContainer: { flexDirection: "column" },
+  logoBox: { backgroundColor: "#7a4f9e", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 2 },
+  logoText: { fontWeight: "600", fontSize: 16, color: "#fff" },
+  subtitle: { fontSize: 12, color: "#333" },
+  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginVertical: 15 },
+  productsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginHorizontal: -5 },
+  cardContainer: { width: screenWidth / 2 - 20, marginBottom: 15, marginHorizontal: 5, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' },
+  imageWrapper: { position: 'relative', width: '100%', height: 150 },
+  productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  heartIcon: { position: 'absolute', top: 10, right: 10, padding: 5, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 15 },
+  plusIcon: { position: 'absolute', bottom: 10, right: 10, padding: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 20 },
+  cardDetails: { padding: 10 },
+  productType: { fontSize: 14, color: '#555', marginBottom: 2 },
+  productTitle: { fontSize: 15, fontWeight: '600', marginBottom: 5, color: '#333' },
+  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#8a2be2' },
+  bottomNav: { height: 60, borderTopWidth: 1, borderTopColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5 },
+  navItem: { flex: 1, alignItems: "center" },
 });

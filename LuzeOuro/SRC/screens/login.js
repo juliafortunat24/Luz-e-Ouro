@@ -9,15 +9,29 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
 
-  const handleLogin = async () => {
-    setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+ const handleLogin = async () => {
+  setError(null);
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
     if (error) {
       setError(error.message);
-    } else {
-      navigation.navigate('Pagina Inicial');
+      return;
     }
-  };
+
+    // login OK
+    if (data.user && email.toLowerCase() === 'admin@admin.com') {
+      navigation.navigate('PaginaAdmin'); // admin
+    } else {
+      navigation.navigate('PaginaInicial'); // usuários comuns
+    }
+  } catch (err) {
+    setError("Erro inesperado: " + err.message);
+  }
+};
+
+
 
   return (
     <View style={styles.container}>
@@ -143,5 +157,3 @@ const styles = StyleSheet.create({
     fontWeight:'500'
   }
 });
-
-
