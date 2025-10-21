@@ -16,6 +16,7 @@ import PaginaFiltros from './SRC/screens/paginaFiltros';
 import PaginaAdmin from './SRC/screens/paginaAdmin';
 import CadastroProdutos from './SRC/screens/cadastroProdutos';
 import Catalogo from './SRC/screens/catalogo';
+import DadosPessoais from './SRC/screens/paginaDadosPessoais.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +56,7 @@ export default function App() {
           <Stack.Screen name="CadastroProdutos" component={CadastroProdutos} />
           <Stack.Screen name="PaginaAdmin" component={PaginaAdmin} />
           <Stack.Screen name="Catalogo" component={Catalogo} />
+          <Stack.Screen name="DadosPessoais" component={DadosPessoais} />
         </>
         ) : (
           <>

@@ -166,7 +166,7 @@ export default function PaginaPerfil({ navigation }) {
           <NavItem 
             icon="person-outline" 
             text="Dados Pessoais" 
-            onPress={() => navigation.navigate("PaginaDadosPessoais")} // Ajuste a navegação
+            onPress={() => navigation.navigate("DadosPessoais")} // Ajuste a navegação
           />
           <NavItem 
             icon="log-out-outline" 
