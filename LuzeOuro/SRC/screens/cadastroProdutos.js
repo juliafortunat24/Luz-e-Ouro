@@ -6,11 +6,10 @@ import { supabase } from "../supabaseClient";
 export default function CadastrarProdutos({ navigation }) {
   const [nome, setNome] = useState("");
   const [preco, setPreco] = useState("");
-  const [material, setMaterial] = useState("");
-  const [tipo, setTipo] = useState("");
+  const [material, setMaterial] = useState("Prata");
+  const [tipo, setTipo] = useState("Colar");
   const [imagem, setImagem] = useState(null);
 
-  // Escolher imagem da galeria
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -28,76 +27,123 @@ export default function CadastrarProdutos({ navigation }) {
     }
   };
 
-  // Cadastro do produto
- const cadastrarProduto = async () => {
-  if (!nome || !preco || !material || !tipo || !imagem) {
-    Alert.alert("Erro", "Preencha todos os campos!");
-    return;
-  }
-
-  try {
-    // Criar um nome único para a imagem
-    const filename = `produto_${Date.now()}.jpg`;
-
-    // Converter a imagem para blob
-    const response = await fetch(imagem);
-    const blob = await response.blob();
-
-    // Upload da imagem no Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("produtos")
-      .upload(filename, blob, { upsert: true });
-
-    if (uploadError) {
-      console.log("Erro no upload da imagem:", uploadError);
-      Alert.alert("Erro", "Falha ao enviar a imagem.");
+  const cadastrarProduto = async () => {
+    if (!nome || !preco || !material || !tipo || !imagem) {
+      Alert.alert("Erro", "Preencha todos os campos!");
       return;
     }
 
-    console.log("Upload realizado com sucesso:", uploadData);
+    try {
+      const filename = `produto_${Date.now()}.jpg`;
+      const response = await fetch(imagem);
+      const blob = await response.blob();
 
-    // Obter URL pública da imagem
-    const { data: urlData, error: urlError } = supabase.storage
-      .from("produtos")
-      .getPublicUrl(uploadData.path);
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("produtos")
+        .upload(filename, blob, { upsert: true });
 
-    if (urlError) {
-      console.log("Erro ao obter URL pública:", urlError);
-      Alert.alert("Erro", "Não foi possível gerar a URL da imagem.");
-      return;
+      if (uploadError) {
+        Alert.alert("Erro", "Falha ao enviar a imagem.");
+        return;
+      }
+
+      const { data: urlData, error: urlError } = supabase.storage
+        .from("produtos")
+        .getPublicUrl(uploadData.path);
+
+      if (urlError) {
+        Alert.alert("Erro", "Não foi possível gerar a URL da imagem.");
+        return;
+      }
+
+      const publicUrl = urlData.publicUrl;
+
+      const { error } = await supabase
+        .from("produtos")
+        .insert([{ nome, preco: parseFloat(preco), material, tipo, foto_url: publicUrl }]);
+
+      if (error) {
+        Alert.alert("Erro", "Não foi possível cadastrar o produto.");
+        return;
+      }
+
+      Alert.alert("Sucesso", "Produto cadastrado!");
+      setNome(""); 
+      setPreco(""); 
+      setMaterial("Prata"); 
+      setTipo("Colar"); 
+      setImagem(null);
+
+    } catch (err) {
+      Alert.alert("Erro", "Ocorreu um erro inesperado.");
     }
+  };
 
-    const publicUrl = urlData.publicUrl;
-    console.log("URL pública da imagem:", publicUrl);
-
-    // Inserir produto na tabela
-    const { data, error } = await supabase
-      .from("produtos")
-      .insert([{ nome, preco: parseFloat(preco), material, tipo, foto_url: publicUrl }]);
-
-    if (error) {
-      console.log("Erro ao inserir produto:", error);
-      Alert.alert("Erro", "Não foi possível cadastrar o produto.");
-      return;
-    }
-
-    Alert.alert("Sucesso", "Produto cadastrado!");
-    setNome(""); setPreco(""); setMaterial(""); setTipo(""); setImagem(null);
-
-  } catch (err) {
-    console.log("Erro inesperado:", err);
-    Alert.alert("Erro", "Ocorreu um erro inesperado.");
-  }
-};
+  const handlePrecoChange = (value) => {
+    const numericValue = value.replace(/[^0-9.,]/g, "");
+    setPreco(numericValue);
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
+      
+      {/* Botão de voltar */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>Cadastrar Produto</Text>
 
-      <TextInput style={styles.input} placeholder="Nome do Produto" value={nome} onChangeText={setNome} />
-      <TextInput style={styles.input} placeholder="Preço" value={preco} onChangeText={setPreco} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Material" value={material} onChangeText={setMaterial} />
-      <TextInput style={styles.input} placeholder="Tipo" value={tipo} onChangeText={setTipo} />
+      <TextInput
+        style={styles.input}
+        placeholder="Nome do Produto"
+        value={nome}
+        onChangeText={setNome}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Preço (R$)"
+        value={preco}
+        onChangeText={handlePrecoChange}
+        keyboardType="numeric"
+      />
+
+      {/* Materiais */}
+      <View style={styles.pickerWrapper}>
+        <Text style={styles.pickerLabel}>Material</Text>
+        <View style={styles.pickerContainer}>
+          {["Prata", "Ouro", "Ouro Branco"].map((item, index) => (
+            <TouchableOpacity
+              key={item}
+              style={[styles.option, index === 2 && { borderRightWidth: 0 }]}
+              onPress={() => setMaterial(item)}
+            >
+              <Text style={material === item ? styles.selectedOption : styles.optionText}>
+                {item}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Tipos */}
+      <View style={styles.pickerWrapper}>
+        <Text style={styles.pickerLabel}>Tipo</Text>
+        <View style={styles.pickerContainer}>
+          {["Colar", "Pulseira", "Anéis", "Brincos"].map((item, index) => (
+            <TouchableOpacity
+              key={item}
+              style={[styles.option, index === 3 && { borderRightWidth: 0 }]}
+              onPress={() => setTipo(item)}
+            >
+              <Text style={tipo === item ? styles.selectedOption : styles.optionText}>
+                {item}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
       <TouchableOpacity style={styles.button} onPress={pickImage}>
         <Text style={styles.buttonText}>Escolher Imagem</Text>
@@ -114,8 +160,38 @@ export default function CadastrarProdutos({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
+  backButton: { marginBottom: 10 },
+  backButtonText: { fontSize: 24, color: "#7a4f9e" },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 20, color: "#7a4f9e", textAlign: "center" },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12, marginBottom: 15 },
+  pickerWrapper: { marginBottom: 15 },
+  pickerLabel: { marginBottom: 5, fontWeight: "600", color: "#555" },
+  pickerContainer: {
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  option: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    borderRightWidth: 1,
+    borderRightColor: "#ccc",
+  },
+  optionText: { color: "#555" },
+  selectedOption: {
+    color: "#fff",
+    fontWeight: "700",
+    backgroundColor: "#7a4f9e",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
   button: { backgroundColor: "#7a4f9e", padding: 15, borderRadius: 8, marginBottom: 15, alignItems: "center" },
   buttonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
   previewImage: { width: "100%", height: 200, marginBottom: 15, borderRadius: 8 },
