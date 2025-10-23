@@ -82,15 +82,23 @@ export default function PaginaPerfil({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Header (Topo) */}
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoText}>Luz e Ouro</Text>
-          </View>
-          <Text style={styles.subtitle}>Joias e Acessórios</Text>
-        </View>
-        <Ionicons name="chatbubble-ellipses-outline" size={24} color="#7a4f9e" />
-      </View>
+      {/* Header (igual ao da Página de Filtros) */}
+<View style={styles.header}>
+  <View style={styles.logoContainer}>
+    <Image
+      source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+      style={styles.logoImage}
+    />
+    <View>
+      <Text style={styles.logoText}>Luz e Ouro</Text>
+      <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+    </View>
+  </View>
+  <TouchableOpacity>
+    <Ionicons name="chatbubble-outline" size={24} color="#666" />
+  </TouchableOpacity>
+</View>
+
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Card Principal do Usuário */}
@@ -209,16 +217,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20, // Espaçamento extra no final do ScrollView
   },
   // Estilos do Header (Replicados do seu componente anterior)
-  header: {
-    height: 60,
-    paddingHorizontal: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  logoContainer: {
-    flexDirection: "column",
-  },
+  
   logoBox: {
     backgroundColor: "#7a4f9e",
     paddingHorizontal: 8,
@@ -226,15 +225,37 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 2,
   },
-  logoText: {
-    fontWeight: "600",
-    fontSize: 16,
-    color: "#fff",
-  },
-  subtitle: {
-    fontSize: 12,
-    color: "#333",
-  },
+  header: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingHorizontal: 15,
+  paddingVertical: 10,
+  paddingTop: 45, // mesmo espaçamento da página de filtros
+  backgroundColor: '#fff',
+},
+logoContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+logoImage: {
+  width: 35,
+  height: 35,
+  borderRadius: 5,
+  marginRight: 10,
+  backgroundColor: '#7a4f9e',
+},
+logoText: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#333',
+},
+logoSubtitle: {
+  fontSize: 12,
+  color: '#666',
+  marginTop: -3,
+},
+
   
   // Estilos do Card Principal
   profileCard: {

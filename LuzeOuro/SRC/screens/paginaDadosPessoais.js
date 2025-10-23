@@ -7,12 +7,21 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
+  Image,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native'; // <-- Importado aqui
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+
+const COLORS = {
+  primary: '#7a4f9e',
+  secondary: '#333',
+  background: '#FFFFFF',
+  lightGray: '#F5F5F5',
+  border: '#E0E0E0',
+};
 
 const PerfilUsuario = () => {
-  const navigation = useNavigation(); // <-- Hook de navegação
+  const navigation = useNavigation();
   const [nome, setNome] = useState('Júlia Fortunato');
   const [email, setEmail] = useState('juliafortunato24@gmail.com');
   const [senha, setSenha] = useState('**********');
@@ -23,20 +32,26 @@ const PerfilUsuario = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* HEADER (igual ao da Página de Carrinho) */}
       <View style={styles.header}>
-        <View style={styles.headerLogo}>
-          <Ionicons name="person-circle" size={32} color="#6a329f" />
+        <View style={styles.logoContainer}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/35/8a2be2/ffffff?text=L' }}
+            style={styles.logoImage}
+          />
           <View>
-            <Text style={styles.headerTitle}>Luz e Ouro</Text>
-            <Text style={styles.headerSubtitle}>Joias e Acessórios</Text>
+            <Text style={styles.logoText}>Luz e Ouro</Text>
+            <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
           </View>
         </View>
-        <Ionicons name="chatbubble-outline" size={24} color="#6a329f" />
+
+        <TouchableOpacity onPress={() => console.log('Chat/Contato')}>
+          <Ionicons name="chatbubble-outline" size={24} color={COLORS.primary} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Cartão de edição */}
+        {/* Card de edição de perfil */}
         <View style={styles.card}>
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarText}>JF</Text>
@@ -73,56 +88,69 @@ const PerfilUsuario = () => {
         </View>
       </ScrollView>
 
-      {/* Barra de Navegação Inferior */}
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={() => navigation.navigate('PaginaInicial')}>
-          <Ionicons name="home-outline" size={24} color="#6a329f" />
+      {/* Bottom Navigation (igual à da Página de Brincos) */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaInicial')}>
+          <MaterialCommunityIcons name="home-outline" size={28} color={COLORS.secondary} />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('PaginaFiltros')}>
-          <Ionicons name="search-outline" size={24} color="#6a329f" />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaFiltros')}>
+          <Ionicons name="search-outline" size={28} color={COLORS.secondary} />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('PaginaFavoritos')}>
-          <Ionicons name="heart-outline" size={24} color="#6a329f" />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaFavoritos')}>
+          <Ionicons name="heart-outline" size={28} color={COLORS.secondary} />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('PaginaCarrinho')}>
-          <Ionicons name="cart-outline" size={24} color="#6a329f" />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaCarrinho')}>
+          <Ionicons name="cart-outline" size={28} color={COLORS.secondary} />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('PaginaPerfil')}>
-          <Ionicons name="person" size={24} color="#6a329f" />
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaPerfil')}>
+          <Ionicons name="person" size={28} color={COLORS.primary} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
 
-// Estilos idênticos
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: COLORS.background },
   scrollContent: {
     paddingHorizontal: 15,
     paddingTop: 10,
-    paddingBottom: 20,
+    paddingBottom: 80,
     alignItems: 'center',
   },
+
+  // HEADER igual ao da Página de Carrinho
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    paddingTop: 45,
+    backgroundColor: COLORS.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: COLORS.border,
   },
-  headerLogo: { flexDirection: 'row', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginLeft: 5 },
-  headerSubtitle: { fontSize: 12, color: '#666', marginLeft: 5 },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
+  logoImage: {
+    width: 35,
+    height: 35,
+    borderRadius: 5,
+    marginRight: 10,
+    backgroundColor: COLORS.primary,
+  },
+  logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
+
+  // CARD DE PERFIL
   card: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.lightGray,
     borderRadius: 15,
     padding: 20,
     alignItems: 'center',
@@ -137,7 +165,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#6a329f',
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
@@ -155,21 +183,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   confirmButton: {
-    backgroundColor: '#6a329f',
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 40,
     marginTop: 20,
   },
   confirmButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  footer: {
+
+  // BOTTOM NAV (igual à página de brincos)
+  bottomNav: {
+    height: 60,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    backgroundColor: '#fff',
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    backgroundColor: '#fff',
+    alignItems: 'center',
+    paddingBottom: 5,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
+  navItem: { flex: 1, alignItems: 'center' },
 });
 
 export default PerfilUsuario;

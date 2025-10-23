@@ -64,16 +64,23 @@ export default function PaginaFavoritos({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <MaterialCommunityIcons name="diamond-stone" size={24} color="#7a4f9e" />
-          <View>
-            <Text style={styles.logoTitle}>Luz e Ouro</Text>
-            <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
-          </View>
-        </View>
-        <Ionicons name="chatbubbles-outline" size={22} color="#7a4f9e" />
-      </View>
+      {/* Header (igual ao da Página de Filtros) */}
+<View style={styles.header}>
+  <View style={styles.logoContainer}>
+    <Image
+      source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+      style={styles.logoImage}
+    />
+    <View>
+      <Text style={styles.logoText}>Luz e Ouro</Text>
+      <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+    </View>
+  </View>
+  <TouchableOpacity>
+    <Ionicons name="chatbubble-outline" size={24} color="#666" />
+  </TouchableOpacity>
+</View>
+
 
       <View style={styles.topRow}>
         <Text style={styles.title}>{favoritos.length} Itens Favoritados</Text>
@@ -151,15 +158,38 @@ export default function PaginaFavoritos({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
+  
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-  },
-  logoContainer: { flexDirection: "row", alignItems: "center", gap: 8 },
-  logoTitle: { color: "#7a4f9e", fontWeight: "bold" },
-  logoSubtitle: { color: "#777", fontSize: 12 },
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingHorizontal: 15,
+  paddingVertical: 10,
+  paddingTop: 45, // mesmo espaçamento da página de filtros
+  backgroundColor: '#fff',
+},
+logoContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+logoImage: {
+  width: 35,
+  height: 35,
+  borderRadius: 5,
+  marginRight: 10,
+  backgroundColor: '#7a4f9e',
+},
+logoText: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#333',
+},
+logoSubtitle: {
+  fontSize: 12,
+  color: '#666',
+  marginTop: -3,
+},
+
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",

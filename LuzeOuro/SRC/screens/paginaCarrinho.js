@@ -92,7 +92,7 @@ const CalculoFrete = ({ cep, setCep, endereco, setEndereco, onCalculate, subtota
     <View style={GlobalStyles.card}>
       <View style={freteStyles.header}>
         <Icon name="truck" size={20} color={COLORS.primary} style={{ marginRight: 5 }} />
-        <Text style={GlobalStyles.headerText}>Calcular Frete</Text>
+        <Text style={GlobalStyles.headerText}>Entrega</Text>
       </View>
       <View style={freteStyles.inputGroup}>
         <Text style={GlobalStyles.textRegular}>CEP de Entrega</Text>
@@ -106,7 +106,7 @@ const CalculoFrete = ({ cep, setCep, endereco, setEndereco, onCalculate, subtota
             maxLength={9}
           />
           <TouchableOpacity style={freteStyles.calculateButton} onPress={onCalculate}>
-            <Text style={freteStyles.calculateButtonText}>Calcular</Text>
+            <Text style={freteStyles.calculateButtonText}>Confirmar</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -187,16 +187,21 @@ const CarrinhoScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={GlobalStyles.container}>
-      {/* Header */}
+      
+      {/* Header igual ao da Página de Filtros */}
       <View style={mainStyles.header}>
         <View style={mainStyles.logoContainer}>
-          <View style={mainStyles.logoBox}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/35/7a4f9e/ffffff?text=L' }}
+            style={mainStyles.logoImage}
+          />
+          <View>
             <Text style={mainStyles.logoText}>Luz e Ouro</Text>
+            <Text style={mainStyles.logoSubtitle}>Joias e Acessórios</Text>
           </View>
-          <Text style={mainStyles.subtitle}>Joias e Acessórios</Text>
         </View>
-        <TouchableOpacity onPress={() => console.log('Chat/Contato')}>
-          <Ionicons name="chatbubble-ellipses-outline" size={24} color={COLORS.primary} />
+        <TouchableOpacity>
+          <Ionicons name="chatbubble-outline" size={24} color="#666" />
         </TouchableOpacity>
       </View>
 
@@ -215,43 +220,23 @@ const CarrinhoScreen = ({ navigation }) => {
       {/* Bottom Navigation Igual à Página de Brincos */}
       <View style={mainStyles.bottomNav}>
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaInicial")}>
-          <MaterialCommunityIcons
-            name="home-outline"
-            size={28}
-            color={COLORS.secondary}
-          />
+          <MaterialCommunityIcons name="home-outline" size={28} color={COLORS.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaFiltros")}>
-          <Ionicons
-            name="search-outline"
-            size={28}
-            color={COLORS.secondary}
-          />
+          <Ionicons name="search-outline" size={28} color={COLORS.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaFavoritos")}>
-          <Ionicons
-            name="heart-outline"
-            size={28}
-            color={COLORS.secondary}
-          />
+          <Ionicons name="heart-outline" size={28} color={COLORS.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaCarrinho")}>
-          <Ionicons
-            name="cart"
-            size={28}
-            color={COLORS.primary} // Ícone ativo roxo
-          />
+          <Ionicons name="cart" size={28} color={COLORS.primary} /> 
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
-          <Ionicons
-            name="person-outline"
-            size={28}
-            color={COLORS.secondary}
-          />
+          <Ionicons name="person-outline" size={28} color={COLORS.secondary} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -261,20 +246,27 @@ const CarrinhoScreen = ({ navigation }) => {
 // --- ESTILOS ---
 const mainStyles = StyleSheet.create({
   scrollContent: { paddingVertical: 15 },
-  header: { 
-    height: 60, 
-    paddingHorizontal: 15, 
-    flexDirection: "row", 
-    justifyContent: "space-between", 
-    alignItems: "center",
-    backgroundColor: COLORS.background,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    paddingTop: 45,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  logoContainer: { flexDirection: "column" },
-  logoBox: { backgroundColor: COLORS.primary, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 2 },
-  logoText: { fontWeight: "600", fontSize: 16, color: "#fff" },
-  subtitle: { fontSize: 12, color: COLORS.secondary },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
+  logoImage: {
+    width: 35,
+    height: 35,
+    borderRadius: 5,
+    marginRight: 10,
+    backgroundColor: COLORS.primary,
+  },
+  logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
   bottomNav: { 
     height: 60, 
     borderTopWidth: 1, 
@@ -302,7 +294,6 @@ const GlobalStyles = StyleSheet.create({
   textSmall: { fontSize: 12, color: COLORS.secondary },
 });
 
-// --- Estilos dos Itens, Frete e Resumo ---
 const itemStyles = StyleSheet.create({
   itemContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 15, marginBottom: 10, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   productImage: { width: 60, height: 60, borderRadius: 4, marginRight: 10 },
