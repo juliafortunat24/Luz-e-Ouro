@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { FontAwesome5 } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
 const categories = [
@@ -38,7 +37,6 @@ export default function App({ navigation }) {
     getUser();
   }, []);
 
-  // ---- CATEGORIAS (AJUSTADO) ----
   const renderCategory = ({ item }) => (
     <TouchableOpacity
       style={styles.categoryItem}
@@ -53,6 +51,10 @@ export default function App({ navigation }) {
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
+  };
+
+  const addToCart = (produto) => {
+    navigation.navigate("PaginaCarrinho", { produto: produto });
   };
 
   const renderProductItem = ({ item }) => (
@@ -73,11 +75,12 @@ export default function App({ navigation }) {
         />
       </TouchableOpacity>
 
+      {/* Ícone de carrinho sem fundo */}
       <TouchableOpacity
-        style={styles.plusIcon}
-        onPress={() => navigation.navigate("PaginaCarrinho", { produto: item })}
+        style={{ position: "absolute", bottom: 10, right: 10 }}
+        onPress={() => addToCart(item)}
       >
-        <FontAwesome5 name="plus" size={14} color="#fff" />
+        <Ionicons name="cart-outline" size={24} color="#7a4f9e" />
       </TouchableOpacity>
 
       <View style={styles.productInfo}>
@@ -88,7 +91,6 @@ export default function App({ navigation }) {
     </View>
   );
 
-  // Botão de admin
   const renderAdminButton = () => {
     if (user?.email === "admin@admin.com") {
       return (
@@ -120,12 +122,12 @@ export default function App({ navigation }) {
       </View>
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        {/* Carrossel de Imagens */}
+        {/* Carrossel de imagens locais */}
         <FlatList
           data={[
-            { id: "1", image: "https://cdn.sistemawbuy.com.br/arquivos/625ef789af258e29105f73822b9ad450/produtos/6661f0d01975a/mix-de-colares-trio-reluzente-6661f0d11ecec.jpg" },
-            { id: "2", image: "https://maisejoias.bwimg.com.br/maisejoias/produtos/brinco-quatro-fios-em-prata-925-1733788515.5791.jpg" },
-            { id: "3", image: "https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg" },
+            { id: "1", image: require('../../assets/banner1.jpeg') },
+            { id: "2", image: require('../../assets/banner2.jpeg') },
+            { id: "3", image: require('../../assets/banner3.jpeg') },
           ]}
           keyExtractor={(item) => item.id}
           horizontal
@@ -133,7 +135,7 @@ export default function App({ navigation }) {
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <View style={styles.carouselItem}>
-              <Image source={{ uri: item.image }} style={styles.carouselImage} />
+              <Image source={item.image} style={styles.carouselImage} />
             </View>
           )}
           style={styles.carouselContainer}
@@ -212,7 +214,6 @@ export default function App({ navigation }) {
 // --- Estilos ---
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -227,7 +228,6 @@ const styles = StyleSheet.create({
   logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
 
-  // Carrossel
   carouselContainer: {
     height: 200,
     marginVertical: 15,
@@ -249,24 +249,12 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: { fontWeight: "700", fontSize: 18, marginLeft: 15, marginTop: 5 },
-
-  categoryItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 20,
-    paddingVertical: 10,
-  },
-  categoryLabel: {
-    color: "#7a4f9e",
-    marginTop: 8,
-    fontWeight: "600",
-    fontSize: 14,
-  },
+  categoryItem: { alignItems: "center", justifyContent: "center", marginHorizontal: 20, paddingVertical: 10 },
+  categoryLabel: { color: "#7a4f9e", marginTop: 8, fontWeight: "600", fontSize: 14 },
 
   productCard: { flex: 1, backgroundColor: "#f9f8fb", margin: 8, borderRadius: 12, overflow: "hidden", position: "relative" },
   productImage: { width: "100%", height: 160, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
   favoriteIcon: { position: "absolute", top: 10, right: 10, backgroundColor: "#fff", borderRadius: 15, padding: 5 },
-  plusIcon: { position: "absolute", bottom: 10, right: 10, backgroundColor: "#7a4f9e", borderRadius: 12, padding: 6 },
   productInfo: { padding: 12 },
   productType: { color: "#7a4f9e", fontWeight: "600", marginBottom: 3 },
   productName: { fontWeight: "700", marginBottom: 4 },
@@ -283,15 +271,6 @@ const styles = StyleSheet.create({
   },
   adminButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
 
-  bottomNav: {
-    height: 60,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingBottom: 5,
-  },
+  bottomNav: { height: 60, borderTopWidth: 1, borderTopColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5 },
   navItem: { flex: 1, alignItems: "center" },
 });
