@@ -71,10 +71,8 @@ const Header = () => (
         <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
       </View>
     </View>
-    <TouchableOpacity>
-      <Ionicons name="chatbubble-outline" size={24} color="#666" />
-    </TouchableOpacity>
   </View>
+
 );
 
 // --- Bottom Navigation ---

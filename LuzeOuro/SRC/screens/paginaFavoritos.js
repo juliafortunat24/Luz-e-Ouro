@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -65,21 +65,19 @@ export default function PaginaFavoritos({ route, navigation }) {
   return (
     <View style={styles.container}>
       {/* Header (igual ao da Página de Filtros) */}
-<View style={styles.header}>
-  <View style={styles.logoContainer}>
-    <Image
-      source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
-      style={styles.logoImage}
-    />
-    <View>
-      <Text style={styles.logoText}>Luz e Ouro</Text>
-      <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
-    </View>
-  </View>
-  <TouchableOpacity>
-    <Ionicons name="chatbubble-outline" size={24} color="#666" />
-  </TouchableOpacity>
-</View>
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+            style={styles.logoImage}
+          />
+          <View>
+            <Text style={styles.logoText}>Luz e Ouro</Text>
+            <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+          </View>
+        </View>
+      </View>
+
 
 
       <View style={styles.topRow}>
@@ -158,37 +156,37 @@ export default function PaginaFavoritos({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  
+
   header: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingHorizontal: 15,
-  paddingVertical: 10,
-  paddingTop: 45, // mesmo espaçamento da página de filtros
-  backgroundColor: '#fff',
-},
-logoContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-logoImage: {
-  width: 35,
-  height: 35,
-  borderRadius: 5,
-  marginRight: 10,
-  backgroundColor: '#7a4f9e',
-},
-logoText: {
-  fontSize: 18,
-  fontWeight: 'bold',
-  color: '#333',
-},
-logoSubtitle: {
-  fontSize: 12,
-  color: '#666',
-  marginTop: -3,
-},
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    paddingTop: 45, // mesmo espaçamento da página de filtros
+    backgroundColor: '#fff',
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoImage: {
+    width: 35,
+    height: 35,
+    borderRadius: 5,
+    marginRight: 10,
+    backgroundColor: '#7a4f9e',
+  },
+  logoText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  logoSubtitle: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: -3,
+  },
 
   topRow: {
     flexDirection: "row",
@@ -222,16 +220,16 @@ logoSubtitle: {
     alignItems: "center",
   },
   continueText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
-  bottomNav: { 
-    height: 60, 
-    borderTopWidth: 1, 
-    borderTopColor: "#ddd", 
-    backgroundColor: "#fff", 
-    flexDirection: "row", 
-    justifyContent: "space-around", 
-    alignItems: "center", 
+  bottomNav: {
+    height: 60,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
     paddingBottom: 5,
-    position: 'absolute', 
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,

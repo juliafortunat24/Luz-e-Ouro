@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons'; 
-import { supabase } from '../supabaseClient'; 
+import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import { supabase } from '../supabaseClient';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -28,7 +28,7 @@ const ProductCard = ({ product, user, navigation }) => (
   <View style={styles.cardContainer}>
     <View style={styles.imageWrapper}>
       <Image source={{ uri: product.image }} style={styles.productImage} />
-    
+
       {/* Ícone de Favorito (igual à Página Inicial) */}
       <TouchableOpacity
         style={styles.favoriteIcon}
@@ -36,7 +36,7 @@ const ProductCard = ({ product, user, navigation }) => (
       >
         <Ionicons name="heart-outline" size={20} color="#aaa" />
       </TouchableOpacity>
-    
+
       {/* Ícone de + (igual à Página Inicial) */}
       <TouchableOpacity
         style={styles.plusIcon}
@@ -45,7 +45,7 @@ const ProductCard = ({ product, user, navigation }) => (
         <FontAwesome5 name="plus" size={14} color="#fff" />
       </TouchableOpacity>
     </View>
-    
+
     <View style={styles.cardDetails}>
       <Text style={styles.productType}>{product.type}</Text>
       <Text style={styles.productTitle}>{product.title}</Text>
@@ -71,21 +71,19 @@ export default function PaginaRelogios({ navigation }) {
     <View style={styles.screenContainer}>
       {/* Header */}
       {/* Header (igual ao da Página de Filtros) */}
-<View style={styles.header}>
-  <View style={styles.logoContainer}>
-    <Image
-      source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
-      style={styles.logoImage}
-    />
-    <View>
-      <Text style={styles.logoText}>Luz e Ouro</Text>
-      <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
-    </View>
-  </View>
-  <TouchableOpacity>
-    <Ionicons name="chatbubble-outline" size={24} color="#666" />
-  </TouchableOpacity>
-</View>
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+            style={styles.logoImage}
+          />
+          <View>
+            <Text style={styles.logoText}>Luz e Ouro</Text>
+            <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+          </View>
+        </View>
+      </View>
+
 
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -142,35 +140,35 @@ const styles = StyleSheet.create({
   screenContainer: { flex: 1, backgroundColor: '#fff' },
   scrollViewContent: { paddingHorizontal: 15, paddingBottom: 20 },
   header: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingHorizontal: 15,
-  paddingVertical: 10,
-  paddingTop: 45, // mesmo espaçamento da página de filtros
-  backgroundColor: '#fff',
-},
-logoContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-logoImage: {
-  width: 35,
-  height: 35,
-  borderRadius: 5,
-  marginRight: 10,
-  backgroundColor: '#7a4f9e',
-},
-logoText: {
-  fontSize: 18,
-  fontWeight: 'bold',
-  color: '#333',
-},
-logoSubtitle: {
-  fontSize: 12,
-  color: '#666',
-  marginTop: -3,
-},
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    paddingTop: 45, // mesmo espaçamento da página de filtros
+    backgroundColor: '#fff',
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoImage: {
+    width: 35,
+    height: 35,
+    borderRadius: 5,
+    marginRight: 10,
+    backgroundColor: '#7a4f9e',
+  },
+  logoText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  logoSubtitle: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: -3,
+  },
 
   logoBox: { backgroundColor: "#7a4f9e", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 2 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginVertical: 15 },
@@ -178,22 +176,22 @@ logoSubtitle: {
   cardContainer: { width: screenWidth / 2 - 20, marginBottom: 15, marginHorizontal: 5, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' },
   imageWrapper: { position: 'relative', width: '100%', height: 150 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
- favoriteIcon: {
-  position: "absolute",
-  top: 10,
-  right: 10,
-  backgroundColor: "#fff",
-  borderRadius: 15,
-  padding: 5,
-},
-plusIcon: {
-  position: "absolute",
-  bottom: 10,
-  right: 10,
-  backgroundColor: "#7a4f9e",
-  borderRadius: 12,
-  padding: 6,
-},
+  favoriteIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 5,
+  },
+  plusIcon: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    backgroundColor: "#7a4f9e",
+    borderRadius: 12,
+    padding: 6,
+  },
 
   cardDetails: { padding: 10 },
   productType: { fontSize: 14, color: '#555', marginBottom: 2 },

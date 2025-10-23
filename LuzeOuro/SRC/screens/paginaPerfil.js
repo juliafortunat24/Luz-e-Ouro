@@ -11,7 +11,7 @@ import {
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 // IMPORT DO SUPABASE (use o seu cliente real)
-import { supabase } from '../supabaseClient'; 
+import { supabase } from '../supabaseClient';
 // OBS: Certifique-se que o caminho para o seu supabaseClient está correto.
 
 // --- DADOS MOCKADOS (Substitua pelos dados reais do usuário do Supabase) ---
@@ -56,7 +56,7 @@ export default function PaginaPerfil({ navigation }) {
       Alert.alert("Erro ao sair", error.message);
     } else {
       // Redireciona para a tela de login (ajuste o nome da tela se for diferente)
-      navigation.replace('PaginaLogin'); 
+      navigation.replace('PaginaLogin');
     }
   };
 
@@ -83,21 +83,19 @@ export default function PaginaPerfil({ navigation }) {
     <View style={styles.container}>
       {/* Header (Topo) */}
       {/* Header (igual ao da Página de Filtros) */}
-<View style={styles.header}>
-  <View style={styles.logoContainer}>
-    <Image
-      source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
-      style={styles.logoImage}
-    />
-    <View>
-      <Text style={styles.logoText}>Luz e Ouro</Text>
-      <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
-    </View>
-  </View>
-  <TouchableOpacity>
-    <Ionicons name="chatbubble-outline" size={24} color="#666" />
-  </TouchableOpacity>
-</View>
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+            style={styles.logoImage}
+          />
+          <View>
+            <Text style={styles.logoText}>Luz e Ouro</Text>
+            <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+          </View>
+        </View>
+      </View>
+
 
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -107,7 +105,7 @@ export default function PaginaPerfil({ navigation }) {
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarText}>{userProfile.initials}</Text>
           </View>
-          
+
           {/* Informações */}
           <View style={styles.infoContainer}>
             <Text style={styles.userName}>{userProfile.name}</Text>
@@ -134,7 +132,7 @@ export default function PaginaPerfil({ navigation }) {
 
         {/* Botoes de Acesso Rápido (Pedidos e Favoritos) */}
         <View style={styles.quickAccessRow}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quickAccessButton}
             onPress={() => navigation.navigate("PaginaCarrinho")} // Ajuste a navegação
           >
@@ -142,7 +140,7 @@ export default function PaginaPerfil({ navigation }) {
             <Text style={styles.quickAccessText}>Pedidos</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quickAccessButton}
             onPress={() => navigation.navigate("PaginaFavoritos")} // Ajuste a navegação
           >
@@ -154,7 +152,7 @@ export default function PaginaPerfil({ navigation }) {
         {/* Pedidos Recentes */}
         <View style={styles.recentOrdersCard}>
           <Text style={styles.recentOrdersTitle}>Pedidos recentes</Text>
-          
+
           {userProfile.recentOrders.map((order) => (
             <View key={order.id} style={styles.orderItem}>
               <View>
@@ -171,14 +169,14 @@ export default function PaginaPerfil({ navigation }) {
 
         {/* Itens de Navegação (Dados Pessoais e Sair) */}
         <View style={styles.navSection}>
-          <NavItem 
-            icon="person-outline" 
-            text="Dados Pessoais" 
+          <NavItem
+            icon="person-outline"
+            text="Dados Pessoais"
             onPress={() => navigation.navigate("DadosPessoais")} // Ajuste a navegação
           />
-          <NavItem 
-            icon="log-out-outline" 
-            text="Sair da Conta" 
+          <NavItem
+            icon="log-out-outline"
+            text="Sair da Conta"
             onPress={handleSignOut}
           />
         </View>
@@ -187,20 +185,20 @@ export default function PaginaPerfil({ navigation }) {
       {/* Navegação Inferior (Mantida do seu componente anterior) */}
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaInicial")}>
-            <MaterialCommunityIcons name="home-outline" size={28} color="#aaa" />
+          <MaterialCommunityIcons name="home-outline" size={28} color="#aaa" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaFiltros")}>
-            <Ionicons name="search-outline" size={28} color="#aaa" />
+          <Ionicons name="search-outline" size={28} color="#aaa" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaFavoritos")}>
-            <Ionicons name="heart-outline" size={28} color="#aaa" />
+          <Ionicons name="heart-outline" size={28} color="#aaa" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaCarrinho")}>
-            <Ionicons name="cart-outline" size={28} color="#aaa" />
+          <Ionicons name="cart-outline" size={28} color="#aaa" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaPerfil")}>
-            {/* Ícone de perfil ATIVO */}
-            <Ionicons name="person" size={28} color="#7a4f9e" /> 
+          {/* Ícone de perfil ATIVO */}
+          <Ionicons name="person" size={28} color="#7a4f9e" />
         </TouchableOpacity>
       </View>
     </View>
@@ -217,7 +215,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20, // Espaçamento extra no final do ScrollView
   },
   // Estilos do Header (Replicados do seu componente anterior)
-  
+
   logoBox: {
     backgroundColor: "#7a4f9e",
     paddingHorizontal: 8,
@@ -226,37 +224,37 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   header: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingHorizontal: 15,
-  paddingVertical: 10,
-  paddingTop: 45, // mesmo espaçamento da página de filtros
-  backgroundColor: '#fff',
-},
-logoContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-logoImage: {
-  width: 35,
-  height: 35,
-  borderRadius: 5,
-  marginRight: 10,
-  backgroundColor: '#7a4f9e',
-},
-logoText: {
-  fontSize: 18,
-  fontWeight: 'bold',
-  color: '#333',
-},
-logoSubtitle: {
-  fontSize: 12,
-  color: '#666',
-  marginTop: -3,
-},
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    paddingTop: 45, // mesmo espaçamento da página de filtros
+    backgroundColor: '#fff',
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoImage: {
+    width: 35,
+    height: 35,
+    borderRadius: 5,
+    marginRight: 10,
+    backgroundColor: '#7a4f9e',
+  },
+  logoText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  logoSubtitle: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: -3,
+  },
 
-  
+
   // Estilos do Card Principal
   profileCard: {
     backgroundColor: "#f5f5f5",

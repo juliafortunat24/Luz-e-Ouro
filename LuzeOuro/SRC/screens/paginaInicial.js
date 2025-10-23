@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -117,25 +117,29 @@ export default function App({ navigation }) {
             <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
           </View>
         </View>
-        <TouchableOpacity>
-          <Ionicons name="chatbubble-outline" size={24} color="#666" />
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        {/* Banner */}
-        <View style={styles.banner}>
-          <Text style={styles.bannerTitle}>Coleção Premium</Text>
-          <Text style={styles.bannerSubtitle}>Joias exclusivas em ouro e prata.</Text>
-          <TouchableOpacity
-            style={styles.bannerButton}
-            onPress={() => navigation.navigate("Catalogo")}
-          >
-            <Text style={styles.bannerButtonText}>Ver catálogo</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Carrossel de Imagens */}
+        <FlatList
+          data={[
+            { id: "1", image: "https://cdn.sistemawbuy.com.br/arquivos/625ef789af258e29105f73822b9ad450/produtos/6661f0d01975a/mix-de-colares-trio-reluzente-6661f0d11ecec.jpg" },
+            { id: "2", image: "https://maisejoias.bwimg.com.br/maisejoias/produtos/brinco-quatro-fios-em-prata-925-1733788515.5791.jpg" },
+            { id: "3", image: "https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg" },
+          ]}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.carouselItem}>
+              <Image source={{ uri: item.image }} style={styles.carouselImage} />
+            </View>
+          )}
+          style={styles.carouselContainer}
+        />
 
-        {/* Categorias (AJUSTADO) */}
+        {/* Categorias */}
         <Text style={styles.sectionTitle}>Categorias</Text>
         <FlatList
           data={categories}
@@ -177,20 +181,6 @@ export default function App({ navigation }) {
 
         {/* Botão admin */}
         {renderAdminButton()}
-
-        {/* Oferta especial */}
-        <View style={styles.offerBox}>
-          <Text style={styles.offerTitle}>Oferta Especial</Text>
-          <Text style={styles.offerDescription}>
-            10% de desconto em toda a coleção de prata
-          </Text>
-          <TouchableOpacity
-            style={styles.offerButton}
-            onPress={() => navigation.navigate("Catalogo")}
-          >
-            <Text style={styles.offerButtonText}>Ver Catálogo</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
 
       {/* Bottom Navigation */}
@@ -237,22 +227,29 @@ const styles = StyleSheet.create({
   logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
 
-  banner: {
-    backgroundColor: "#b59dc4",
-    marginHorizontal: 10,
+  // Carrossel
+  carouselContainer: {
+    height: 200,
     marginVertical: 15,
-    borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
+    marginLeft: 5,
+    marginRight: 5,
   },
-  bannerTitle: { fontWeight: "700", fontSize: 20, color: "#fff", marginBottom: 5 },
-  bannerSubtitle: { fontSize: 14, color: "#eee", marginBottom: 15 },
-  bannerButton: { backgroundColor: "#7a4f9e", paddingHorizontal: 20, paddingVertical: 8, borderRadius: 6 },
-  bannerButtonText: { color: "#fff", fontWeight: "600" },
+  carouselItem: {
+    width: 360,
+    height: 200,
+    borderRadius: 10,
+    overflow: "hidden",
+    marginHorizontal: 10,
+    backgroundColor: "#f2f2f2",
+  },
+  carouselImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
 
   sectionTitle: { fontWeight: "700", fontSize: 18, marginLeft: 15, marginTop: 5 },
 
-  // --- NOVOS ESTILOS DE CATEGORIA ---
   categoryItem: {
     alignItems: "center",
     justifyContent: "center",
@@ -274,12 +271,6 @@ const styles = StyleSheet.create({
   productType: { color: "#7a4f9e", fontWeight: "600", marginBottom: 3 },
   productName: { fontWeight: "700", marginBottom: 4 },
   productPrice: { color: "#4a4a4a", fontWeight: "700", fontSize: 16 },
-
-  offerBox: { backgroundColor: "#b59dc4", borderRadius: 10, margin: 15, padding: 20, alignItems: "center" },
-  offerTitle: { fontWeight: "700", fontSize: 20, marginBottom: 10, color: "#fff" },
-  offerDescription: { fontSize: 14, marginBottom: 15, color: "#eee" },
-  offerButton: { backgroundColor: "#7a4f9e", paddingVertical: 10, paddingHorizontal: 25, borderRadius: 6 },
-  offerButtonText: { color: "#fff", fontWeight: "600" },
 
   adminButton: {
     backgroundColor: "#7a4f9e",

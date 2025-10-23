@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  Image, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView, 
-  TextInput 
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  TextInput
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Feather';
@@ -26,23 +26,23 @@ const COLORS = {
 
 // --- DADOS INICIAIS ---
 const DADOS_CARRINHO_INICIAL = [
-  { 
-    id: '1', 
-    nome: 'Conjunto Colares', 
-    metal: 'Prata', 
-    quantidade: 1, 
-    precoUnitario: 548.90, 
-    precoTotal: 548.90, 
-    imageUrl: 'https://cdn.sistemawbuy.com.br/arquivos/625ef789af258e29105f73822b9ad450/produtos/6661f0d01975a/mix-de-colares-trio-reluzente-6661f0d11ecec.jpg' 
+  {
+    id: '1',
+    nome: 'Conjunto Colares',
+    metal: 'Prata',
+    quantidade: 1,
+    precoUnitario: 548.90,
+    precoTotal: 548.90,
+    imageUrl: 'https://cdn.sistemawbuy.com.br/arquivos/625ef789af258e29105f73822b9ad450/produtos/6661f0d01975a/mix-de-colares-trio-reluzente-6661f0d11ecec.jpg'
   },
-  { 
-    id: '2', 
-    nome: 'Anel com Turmalina', 
-    metal: 'Ouro branco', 
-    quantidade: 1, 
-    precoUnitario: 1090.90, 
-    precoTotal: 1090.90, 
-    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s' 
+  {
+    id: '2',
+    nome: 'Anel com Turmalina',
+    metal: 'Ouro branco',
+    quantidade: 1,
+    precoUnitario: 1090.90,
+    precoTotal: 1090.90,
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s'
   },
 ];
 
@@ -57,22 +57,22 @@ const ItemCarrinho = ({ item, onUpdateQuantity, onRemove }) => {
             <Text style={itemStyles.productName}>{item.nome}</Text>
             <Text style={GlobalStyles.textSmall}>{item.metal}</Text>
           </View>
-          <TouchableOpacity onPress={() => onRemove(item.id)}> 
+          <TouchableOpacity onPress={() => onRemove(item.id)}>
             <Icon name="trash-2" size={20} color={COLORS.secondary} />
           </TouchableOpacity>
         </View>
         <View style={itemStyles.actionsRow}>
           <View style={itemStyles.quantityControl}>
-            <TouchableOpacity 
-              style={itemStyles.qtyButton} 
+            <TouchableOpacity
+              style={itemStyles.qtyButton}
               onPress={() => onUpdateQuantity(item.id, item.quantidade - 1)}
               disabled={item.quantidade <= 1}
             >
               <Text style={itemStyles.qtyButtonText}>-</Text>
             </TouchableOpacity>
             <Text style={itemStyles.qtyText}>{item.quantidade}</Text>
-            <TouchableOpacity 
-              style={itemStyles.qtyButton} 
+            <TouchableOpacity
+              style={itemStyles.qtyButton}
               onPress={() => onUpdateQuantity(item.id, item.quantidade + 1)}
             >
               <Text style={itemStyles.qtyButtonText}>+</Text>
@@ -120,7 +120,7 @@ const CalculoFrete = ({ cep, setCep, endereco, setEndereco, onCalculate, subtota
         />
       </View>
       <View style={freteStyles.freteVantagens}>
-        <Text style={{...GlobalStyles.textRegular, fontWeight: 'bold'}}>Vantagens do Frete</Text>
+        <Text style={{ ...GlobalStyles.textRegular, fontWeight: 'bold' }}>Vantagens do Frete</Text>
         <Text style={GlobalStyles.textSmall}>• Frete grátis PAC para compras acima de R$ 399,90</Text>
         <Text style={GlobalStyles.textSmall}>• Frete grátis SEDEX para compras acima de R$ 990,00</Text>
       </View>
@@ -131,7 +131,7 @@ const CalculoFrete = ({ cep, setCep, endereco, setEndereco, onCalculate, subtota
 const ResumoPedido = ({ subtotal, frete, total, onFinish, onContinue }) => {
   const freteGratis = frete === 'Grátis';
   return (
-    <View style={[GlobalStyles.card, {marginBottom: 100}]}>
+    <View style={[GlobalStyles.card, { marginBottom: 100 }]}>
       <Text style={GlobalStyles.headerText}>Resumo do Pedido</Text>
       <View style={resumoStyles.summaryRow}>
         <Text style={GlobalStyles.textRegular}>Subtotal</Text>
@@ -187,7 +187,7 @@ const CarrinhoScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={GlobalStyles.container}>
-      
+
       {/* Header igual ao da Página de Filtros */}
       <View style={mainStyles.header}>
         <View style={mainStyles.logoContainer}>
@@ -200,10 +200,8 @@ const CarrinhoScreen = ({ navigation }) => {
             <Text style={mainStyles.logoSubtitle}>Joias e Acessórios</Text>
           </View>
         </View>
-        <TouchableOpacity>
-          <Ionicons name="chatbubble-outline" size={24} color="#666" />
-        </TouchableOpacity>
       </View>
+
 
       <ScrollView contentContainerStyle={mainStyles.scrollContent}>
         <View style={[GlobalStyles.card, { paddingHorizontal: 0, paddingVertical: 5 }]}>
@@ -232,7 +230,7 @@ const CarrinhoScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaCarrinho")}>
-          <Ionicons name="cart" size={28} color={COLORS.primary} /> 
+          <Ionicons name="cart" size={28} color={COLORS.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
@@ -267,16 +265,16 @@ const mainStyles = StyleSheet.create({
   },
   logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
-  bottomNav: { 
-    height: 60, 
-    borderTopWidth: 1, 
-    borderTopColor: "#ddd", 
-    backgroundColor: "#fff", 
-    flexDirection: "row", 
-    justifyContent: "space-around", 
-    alignItems: "center", 
+  bottomNav: {
+    height: 60,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
     paddingBottom: 5,
-    position: 'absolute', 
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,

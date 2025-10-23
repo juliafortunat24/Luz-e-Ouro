@@ -63,9 +63,9 @@ const launches = [
   },
 ];
 
-export default function App({navigation}) {
+export default function App({ navigation }) {
   const [favorites, setFavorites] = useState([]);
-  
+
   const renderCategory = ({ item }) => (
     <TouchableOpacity
       style={{ margin: 10, alignItems: "center" }}
@@ -91,39 +91,39 @@ export default function App({navigation}) {
   // );
 
   const renderProductItem = ({ item }) => (
-  <View style={styles.productCard}>
-    <Image source={{ uri: item.image }} style={styles.productImage} />
+    <View style={styles.productCard}>
+      <Image source={{ uri: item.image }} style={styles.productImage} />
 
-    {/* Ícone de Favorito */}
-    <TouchableOpacity
-      style={styles.favoriteIcon}
-      onPress={() => {
-        toggleFavorite(item.id);
-        navigation.navigate("PaginaFavoritos", { produto: item });
-      }}
-    >
-      <Ionicons
-        name={favorites.includes(item.id) ? "heart" : "heart-outline"}
-        size={20}
-        color={favorites.includes(item.id) ? "#7a4f9e" : "#aaa"}
-      />
-    </TouchableOpacity>
+      {/* Ícone de Favorito */}
+      <TouchableOpacity
+        style={styles.favoriteIcon}
+        onPress={() => {
+          toggleFavorite(item.id);
+          navigation.navigate("PaginaFavoritos", { produto: item });
+        }}
+      >
+        <Ionicons
+          name={favorites.includes(item.id) ? "heart" : "heart-outline"}
+          size={20}
+          color={favorites.includes(item.id) ? "#7a4f9e" : "#aaa"}
+        />
+      </TouchableOpacity>
 
-    {/* Ícone de adicionar ao carrinho */}
-    <TouchableOpacity
-      style={styles.plusIcon}
-      onPress={() => navigation.navigate("PaginaCarrinho", { produto: item })}
-    >
-      <FontAwesome5 name="plus" size={14} color="#fff" />
-    </TouchableOpacity>
+      {/* Ícone de adicionar ao carrinho */}
+      <TouchableOpacity
+        style={styles.plusIcon}
+        onPress={() => navigation.navigate("PaginaCarrinho", { produto: item })}
+      >
+        <FontAwesome5 name="plus" size={14} color="#fff" />
+      </TouchableOpacity>
 
-    <View style={styles.productInfo}>
-      <Text style={styles.productType}>{item.type}</Text>
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productPrice}>{item.price}</Text>
+      <View style={styles.productInfo}>
+        <Text style={styles.productType}>{item.type}</Text>
+        <Text style={styles.productName}>{item.name}</Text>
+        <Text style={styles.productPrice}>{item.price}</Text>
+      </View>
     </View>
-  </View>
-);
+  );
 
 
 
@@ -132,13 +132,17 @@ export default function App({navigation}) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <View style={styles.logoBox}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+            style={styles.logoImage}
+          />
+          <View>
             <Text style={styles.logoText}>Luz e Ouro</Text>
+            <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
           </View>
-          <Text style={styles.subtitle}>Joias e Acessórios</Text>
         </View>
-        <Ionicons name="chatbubble-ellipses-outline" size={24} color="#7a4f9e" />
       </View>
+
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Promo banner */}
@@ -202,42 +206,42 @@ export default function App({navigation}) {
       </ScrollView>
 
       {/* Bottom Navigation */}
-<View style={styles.bottomNav}>
-  <TouchableOpacity 
-    style={styles.navItem} 
-    onPress={() => navigation.navigate("PaginaInicial")} // Página principal
-  >
-    <MaterialCommunityIcons name="home" size={28} color="#7a4f9e" />
-  </TouchableOpacity>
+      <View style={styles.bottomNav}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("PaginaInicial")} // Página principal
+        >
+          <MaterialCommunityIcons name="home" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
 
-  <TouchableOpacity 
-    style={styles.navItem} 
-    onPress={() => navigation.navigate("PaginaFiltros")} // Página de busca
-  >
-    <Ionicons name="search-outline" size={28} color="#7a4f9e" />
-  </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("PaginaFiltros")} // Página de busca
+        >
+          <Ionicons name="search-outline" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
 
-  <TouchableOpacity 
-    style={styles.navItem} 
-    onPress={() => navigation.navigate("PaginaFavoritos")} // Página de favoritos
-  >
-    <Ionicons name="heart-outline" size={28} color="#7a4f9e" />
-  </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("PaginaFavoritos")} // Página de favoritos
+        >
+          <Ionicons name="heart-outline" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
 
-  <TouchableOpacity 
-    style={styles.navItem} 
-    onPress={() => navigation.navigate("PaginaCarrinho")} // Página do carrinho
-  >
-    <Ionicons name="cart-outline" size={28} color="#7a4f9e" />
-  </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("PaginaCarrinho")} // Página do carrinho
+        >
+          <Ionicons name="cart-outline" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
 
-  <TouchableOpacity 
-    style={styles.navItem} 
-    onPress={() => navigation.navigate("PaginaPerfil")} // Página do perfil
-  >
-    <Ionicons name="person-outline" size={28} color="#7a4f9e" />
-  </TouchableOpacity>
-</View>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("PaginaPerfil")} // Página do perfil
+        >
+          <Ionicons name="person-outline" size={28} color="#7a4f9e" />
+        </TouchableOpacity>
+      </View>
 
     </View>
   );

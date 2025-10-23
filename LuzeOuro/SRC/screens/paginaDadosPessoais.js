@@ -36,7 +36,7 @@ const PerfilUsuario = () => {
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image
-            source={{ uri: 'https://via.placeholder.com/35/8a2be2/ffffff?text=L' }}
+            source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
             style={styles.logoImage}
           />
           <View>
@@ -44,11 +44,8 @@ const PerfilUsuario = () => {
             <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
           </View>
         </View>
-
-        <TouchableOpacity onPress={() => console.log('Chat/Contato')}>
-          <Ionicons name="chatbubble-outline" size={24} color={COLORS.primary} />
-        </TouchableOpacity>
       </View>
+
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Card de edição de perfil */}
