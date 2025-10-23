@@ -7,10 +7,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  TextInput
+  TextInput,
+  Alert
 } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 
@@ -59,23 +59,33 @@ const ProductCard = ({ product, navigation }) => (
   </View>
 );
 
-const Header = () => (
-  <View style={styles.header}>
-    <View style={styles.logoContainer}>
-      <Image
-        source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
-        style={styles.logoImage}
-      />
-      <View>
-        <Text style={styles.logoText}>Luz e Ouro</Text>
-        <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+// --- HEADER ATUALIZADO ---
+const Header = ({ navigation }) => {
+  const handleLogout = () => {
+    Alert.alert("Logout", "Você saiu da conta!");
+    navigation.navigate("login"); // ajuste para sua tela de login
+  };
+
+  return (
+    <View style={styles.header}>
+      <View style={styles.logoContainer}>
+        <MaterialCommunityIcons
+          name="diamond-stone"
+          size={32}
+          color="#8a2be2"
+          style={styles.logoIcon}
+        />
+        <View>
+          <Text style={styles.logoText}>Luz e Ouro</Text>
+          <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+        </View>
       </View>
+      <TouchableOpacity onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={26} color="#666" />
+      </TouchableOpacity>
     </View>
-    <TouchableOpacity>
-      <Ionicons name="chatbubble-outline" size={24} color="#666" />
-    </TouchableOpacity>
-  </View>
-);
+  );
+};
 
 // --- Bottom Navigation ---
 const BottomNav = ({ navigation }) => {
@@ -188,7 +198,7 @@ export default function CatalogScreen({ navigation }) {
 
   return (
     <View style={styles.screenContainer}>
-      <Header />
+      <Header navigation={navigation} />
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={20} color="#999" style={styles.searchIcon} />
         <TextInput style={styles.searchInput} placeholder="Buscar" placeholderTextColor="#999" />
@@ -212,7 +222,6 @@ export default function CatalogScreen({ navigation }) {
         </View>
         <View style={{ height: 50 }} />
       </ScrollView>
-      {/* 👇 Navbar atualizada */}
       <BottomNav navigation={navigation} />
     </View>
   );
@@ -224,7 +233,7 @@ const styles = StyleSheet.create({
   scrollViewContent: { paddingBottom: 80 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10, paddingTop: 45, backgroundColor: '#fff' },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
-  logoImage: { width: 35, height: 35, borderRadius: 5, marginRight: 10, backgroundColor: '#8a2be2' },
+  logoIcon: { marginRight: 10 },
   logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, marginHorizontal: 15, marginVertical: 15, height: 45 },
