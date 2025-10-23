@@ -33,16 +33,16 @@ const DADOS_CARRINHO_INICIAL = [
     quantidade: 1, 
     precoUnitario: 548.90, 
     precoTotal: 548.90, 
-    imageUrl: 'https://via.placeholder.com/60x60/f0e4ff/884dd9?text=C1' 
+    imageUrl: 'https://cdn.sistemawbuy.com.br/arquivos/625ef789af258e29105f73822b9ad450/produtos/6661f0d01975a/mix-de-colares-trio-reluzente-6661f0d11ecec.jpg' 
   },
   { 
     id: '2', 
     nome: 'Anel com Turmalina', 
-    metal: 'Prata', 
+    metal: 'Ouro branco', 
     quantidade: 1, 
     precoUnitario: 1090.90, 
     precoTotal: 1090.90, 
-    imageUrl: 'https://via.placeholder.com/60x60/e4fff0/4d88d9?text=A1' 
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s' 
   },
 ];
 
@@ -160,7 +160,7 @@ const ResumoPedido = ({ subtotal, frete, total, onFinish, onContinue }) => {
 
 // --- CARRINHO SCREEN ---
 const CarrinhoScreen = ({ navigation }) => {
-  const route = useRoute(); // ✅ detecta a tela atual
+  const route = useRoute();
   const currentScreen = route.name;
 
   const [carrinho, setCarrinho] = useState(DADOS_CARRINHO_INICIAL);
@@ -212,45 +212,45 @@ const CarrinhoScreen = ({ navigation }) => {
         <ResumoPedido subtotal={subtotal} frete={frete} total={total} onFinish={() => console.log('Finalizar Compra')} onContinue={() => navigation.navigate("PaginaInicial")} />
       </ScrollView>
 
-      {/* Bottom Navigation Dinâmico */}
+      {/* Bottom Navigation Igual à Página de Brincos */}
       <View style={mainStyles.bottomNav}>
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaInicial")}>
           <MaterialCommunityIcons
-            name={currentScreen === "PaginaInicial" ? "home" : "home-outline"}
+            name="home-outline"
             size={28}
-            color={currentScreen === "PaginaInicial" ? COLORS.primary : COLORS.secondary}
+            color={COLORS.secondary}
           />
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaFiltros")}>
           <Ionicons
-            name={currentScreen === "PaginaFiltros" ? "search" : "search-outline"}
+            name="search-outline"
             size={28}
-            color={currentScreen === "PaginaFiltros" ? COLORS.primary : COLORS.secondary}
+            color={COLORS.secondary}
           />
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaFavoritos")}>
           <Ionicons
-            name={currentScreen === "PaginaFavoritos" ? "heart" : "heart-outline"}
+            name="heart-outline"
             size={28}
-            color={currentScreen === "PaginaFavoritos" ? COLORS.primary : COLORS.secondary}
+            color={COLORS.secondary}
           />
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaCarrinho")}>
           <Ionicons
-            name={currentScreen === "PaginaCarrinho" ? "cart" : "cart-outline"}
+            name="cart"
             size={28}
-            color={currentScreen === "PaginaCarrinho" ? COLORS.primary : COLORS.secondary}
+            color={COLORS.primary} // Ícone ativo roxo
           />
         </TouchableOpacity>
 
         <TouchableOpacity style={mainStyles.navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
           <Ionicons
-            name={currentScreen === "PaginaPerfil" ? "person" : "person-outline"}
+            name="person-outline"
             size={28}
-            color={currentScreen === "PaginaPerfil" ? COLORS.primary : COLORS.secondary}
+            color={COLORS.secondary}
           />
         </TouchableOpacity>
       </View>

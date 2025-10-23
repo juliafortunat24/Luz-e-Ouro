@@ -6,9 +6,9 @@ import Login from './SRC/screens/login';
 import Cadastro from './SRC/screens/cadastro';
 import PaginaInicial from './SRC/screens/paginaInicial';
 import PaginaRelogios from './SRC/screens/paginaRelogios.js';
-// import PaginaAneis from './SRC/screens/paginaAneis';
-// import PaginaColares from './SRC/screens/paginaColares';
-// import PaginaBrincos from './SRC/screens/paginaBrincos';
+import PaginaAneis from './SRC/screens/paginaAneis';
+import PaginaColares from './SRC/screens/paginaColares';
+import PaginaBrincos from './SRC/screens/paginaBrincos';
 import PaginaPerfil from './SRC/screens/paginaPerfil';
 import PaginaFavoritos from './SRC/screens/paginaFavoritos';
 import PaginaCarrinho from './SRC/screens/paginaCarrinho';
@@ -46,9 +46,9 @@ export default function App() {
         {session ? (<>
           <Stack.Screen name="PaginaInicial" component={PaginaInicial} />
           <Stack.Screen name="PaginaRelogios" component={PaginaRelogios} />
-          {/* <Stack.Screen name="PaginaBrincos" component={PaginaBrincos} />
+          <Stack.Screen name="PaginaBrincos" component={PaginaBrincos} />
           <Stack.Screen name="PaginaColares" component={PaginaColares} />
-          <Stack.Screen name="PaginaAneis" component={PaginaAneis} /> */}
+          <Stack.Screen name="PaginaAneis" component={PaginaAneis} />
           <Stack.Screen name="PaginaFiltros" component={PaginaFiltros} />
           <Stack.Screen name="PaginaCarrinho" component={PaginaCarrinho} />
           <Stack.Screen name="PaginaFavoritos" component={PaginaFavoritos} />

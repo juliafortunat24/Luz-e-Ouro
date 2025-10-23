@@ -7,20 +7,19 @@ const screenWidth = Dimensions.get('window').width;
 
 // Dados dos Produtos - Mock
 const productsPage1 = [
-  { id: 1, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://lojalorella.com.br/cdn/shop/files/relogio-feminino-de-luxo-brinde-exclusivo-relogio-feminino-de-luxo-importe-go-ouro-pulseira-de-cristal-646943_640x.jpg?v=1710435914' },
-  { id: 2, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://seculus.vtexassets.com/arquivos/ids/239044-800-auto?v=638319562471670000&width=800&height=auto&aspect=true' },
+  { id: 1, type: 'Ouro Branco', title: 'Anel com Turmalina', price: '1.090,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s' },
+  { id: 2, type: 'Prata', title: 'Anel Cravejado', price: '540,90', image: 'https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg' },
 ];
 
 const productsPage2 = [
-  { id: 3, type: 'Prata', title: 'Conjunto Prata', price: '540,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxI5fBWItXjBrpP5LLN4gDE5U61ab_Yohz6A&s' },
-  { id: 4, type: 'Prata', title: 'Relogio Cravejado', price: '1.090,90', image: 'https://uzistore.com.br/cdn/shop/products/Relogio-Ice-Luxury-Cravejado-Prata-Estilo-Patek-2_644x.jpg?v=1725534178' },
+  { id: 3, type: 'Prata', title: 'Anel Cravejado', price: '540,90', image: 'https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg' },
+  { id: 4, type: 'Prata', title: 'Conjunto Anel Ondas', price: '300,00', image: 'https://images.tcdn.com.br/img/img_prod/1329818/anel_prata_925_minimalista_ondulado_aro_liso_5317_1_c653b0821b7b470b5e967c220fedb154.jpg'}
 ];
-
 const productsPage3 = [
-  { id: 5, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://lojalorella.com.br/cdn/shop/files/relogio-feminino-de-luxo-brinde-exclusivo-relogio-feminino-de-luxo-importe-go-ouro-pulseira-de-cristal-646943_640x.jpg?v=1710435914' },
-  { id: 6, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://seculus.vtexassets.com/arquivos/ids/239044-800-auto?v=638319562471670000&width=800&height=auto&aspect=true' },
-  { id: 7, type: 'Ouro', title: 'Relogio', price: '540,90', image: 'https://d1o6h00a1h5k7q.cloudfront.net/imagens/img_m/35033/17043060.jpg' },
-  { id: 8, type: 'Ouro', title: 'Relogio com pedras', price: '800,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiqRvgMl4ZfMRGbOsXg0hT4V2vT8rKN1jOkw&s' },
+  { id: 5, type: 'Ouro', title: 'Anel brilhante', price: '999,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAoWe2nQobAHp5hUp2jTwDYU5UZvHq368cjA&s' },
+  { id: 6, type: 'Ouro', title: 'Anel de Ouro Largo', price: '320,90', image: 'https://www.aquajoias.com.br/upload/produto/imagem/b_anel-de-ouro-18k-chapado-liso.jpg' },
+  { id: 7, type: 'Ouro', title: 'Anel asa de anjo', price: '540,90', image: 'https://img.irroba.com.br/fit-in/600x600/filters:fill(fff):quality(80)/portalii/catalog/aneis-de-noivado/saron/sarona-novo-gesso/anel-de-ouro-09.jpg' },
+  { id: 8, type: 'Ouro', title: 'Anel de ouro torcido', price: '800,90', image: 'https://cdn.todoanel.com.br/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/a/n/anel_solitario_de_ouro_18k_aro_trancado.jpeg' },
 ];
 
 // Componente de Item do Produto (Card)
@@ -82,21 +81,21 @@ export default function PaginaRelogios({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.sectionTitle}>Relogios Destaque</Text>
+        <Text style={styles.sectionTitle}>Aneis Destaque</Text>
         <View style={styles.productsGrid}>
           {productsPage1.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Relogios de Prata</Text>
+        <Text style={styles.sectionTitle}>Aneis de Prata</Text>
         <View style={styles.productsGrid}>
           {productsPage2.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Relogio de Ouro</Text>
+        <Text style={styles.sectionTitle}>Aneis de Ouro</Text>
         <View style={styles.productsGrid}>
           {productsPage3.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
@@ -144,7 +143,7 @@ const styles = StyleSheet.create({
   cardContainer: { width: screenWidth / 2 - 20, marginBottom: 15, marginHorizontal: 5, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' },
   imageWrapper: { position: 'relative', width: '100%', height: 150 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  favoriteIcon: {
+ favoriteIcon: {
   position: "absolute",
   top: 10,
   right: 10,

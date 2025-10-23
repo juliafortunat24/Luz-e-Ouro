@@ -7,45 +7,45 @@ const screenWidth = Dimensions.get('window').width;
 
 // Dados dos Produtos - Mock
 const productsPage1 = [
-  { id: 1, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://lojalorella.com.br/cdn/shop/files/relogio-feminino-de-luxo-brinde-exclusivo-relogio-feminino-de-luxo-importe-go-ouro-pulseira-de-cristal-646943_640x.jpg?v=1710435914' },
-  { id: 2, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://seculus.vtexassets.com/arquivos/ids/239044-800-auto?v=638319562471670000&width=800&height=auto&aspect=true' },
+  { id: 1, type: 'Prata', title: 'Conjunto de brincos brilhantes', price: '100,90', image: 'https://mirianteofilojoias.com.br/wp-content/uploads/2024/07/brinco-de-prata-base-dupla-cravejada-com-perola-pendurada-2.jpg' },
+  { id: 2, type: 'Ouro e Prata', title: 'Brinco ponto de luz', price: '800,90', image: 'https://cdn.sistemawbuy.com.br/arquivos/e7821c0356b6dfb669d775a599d09550/produtos/663e7a4e6739d/brinco-argola-ponto-de-luz-banhado-a-ouro-66f455b632eec.jpg' },
 ];
 
 const productsPage2 = [
-  { id: 3, type: 'Prata', title: 'Conjunto Prata', price: '540,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxI5fBWItXjBrpP5LLN4gDE5U61ab_Yohz6A&s' },
-  { id: 4, type: 'Prata', title: 'Relogio Cravejado', price: '1.090,90', image: 'https://uzistore.com.br/cdn/shop/products/Relogio-Ice-Luxury-Cravejado-Prata-Estilo-Patek-2_644x.jpg?v=1725534178' },
+  { id: 3, type: 'Prata', title: 'Conjunto de brincos brilhantes', price: '100,90', image: 'https://mirianteofilojoias.com.br/wp-content/uploads/2024/07/brinco-de-prata-base-dupla-cravejada-com-perola-pendurada-2.jpg' },
+  { id: 4, type: 'Prata', title: 'Brincos prata torcidos', price: '120,90', image: 'https://maisejoias.bwimg.com.br/maisejoias/produtos/brinco-quatro-fios-em-prata-925-1733788515.5791.jpg' },
 ];
 
 const productsPage3 = [
-  { id: 5, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://lojalorella.com.br/cdn/shop/files/relogio-feminino-de-luxo-brinde-exclusivo-relogio-feminino-de-luxo-importe-go-ouro-pulseira-de-cristal-646943_640x.jpg?v=1710435914' },
-  { id: 6, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://seculus.vtexassets.com/arquivos/ids/239044-800-auto?v=638319562471670000&width=800&height=auto&aspect=true' },
-  { id: 7, type: 'Ouro', title: 'Relogio', price: '540,90', image: 'https://d1o6h00a1h5k7q.cloudfront.net/imagens/img_m/35033/17043060.jpg' },
-  { id: 8, type: 'Ouro', title: 'Relogio com pedras', price: '800,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiqRvgMl4ZfMRGbOsXg0hT4V2vT8rKN1jOkw&s' },
+  { id: 5, type: 'Ouro', title: 'Triozinho de ouro', price: '200,90', image: 'https://images.tcdn.com.br/img/img_prod/643537/brinco_de_ouro_18k_bola_9mm_adulto_60_4_28bbe4b63cd9cd87092fd19a73de61aa_20250819171702.jpeg' },
+  { id: 6, type: 'Ouro', title: 'Brinco flores', price: '320,90', image: 'https://images.tcdn.com.br/img/img_prod/1094443/brinco_flor_4_petalas_com_pingente_flor_banhado_a_ouro_19017_1_2b007ff9dfeec0507d61cab73276c812.jpg' },
+  { id: 7, type: 'Ouro', title: 'Brinco de rosas', price: '540,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrMGLOhAne0y5RMCQiMfjujTlodUr3F9Xpbw&s' },
+  { id: 8, type: 'Ouro', title: 'Brinco ponto de luz', price: '800,90', image: 'https://cdn.sistemawbuy.com.br/arquivos/e7821c0356b6dfb669d775a599d09550/produtos/663e7a4e6739d/brinco-argola-ponto-de-luz-banhado-a-ouro-66f455b632eec.jpg' },
 ];
 
 // Componente de Item do Produto (Card)
 const ProductCard = ({ product, user, navigation }) => (
   <View style={styles.cardContainer}>
     <View style={styles.imageWrapper}>
-      <Image source={{ uri: product.image }} style={styles.productImage} />
-    
-      {/* Ícone de Favorito (igual à Página Inicial) */}
-      <TouchableOpacity
-        style={styles.favoriteIcon}
-        onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
-      >
-        <Ionicons name="heart-outline" size={20} color="#aaa" />
-      </TouchableOpacity>
-    
-      {/* Ícone de + (igual à Página Inicial) */}
-      <TouchableOpacity
-        style={styles.plusIcon}
-        onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
-      >
-        <FontAwesome5 name="plus" size={14} color="#fff" />
-      </TouchableOpacity>
-    </View>
-    
+  <Image source={{ uri: product.image }} style={styles.productImage} />
+
+  {/* Ícone de Favorito (igual à Página Inicial) */}
+  <TouchableOpacity
+    style={styles.favoriteIcon}
+    onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
+  >
+    <Ionicons name="heart-outline" size={20} color="#aaa" />
+  </TouchableOpacity>
+
+  {/* Ícone de + (igual à Página Inicial) */}
+  <TouchableOpacity
+    style={styles.plusIcon}
+    onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
+  >
+    <FontAwesome5 name="plus" size={14} color="#fff" />
+  </TouchableOpacity>
+</View>
+
     
     <View style={styles.cardDetails}>
       <Text style={styles.productType}>{product.type}</Text>
@@ -82,21 +82,21 @@ export default function PaginaRelogios({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.sectionTitle}>Relogios Destaque</Text>
+        <Text style={styles.sectionTitle}>Brincos Destaque</Text>
         <View style={styles.productsGrid}>
           {productsPage1.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Relogios de Prata</Text>
+        <Text style={styles.sectionTitle}>Brincos de Prata</Text>
         <View style={styles.productsGrid}>
           {productsPage2.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Relogio de Ouro</Text>
+        <Text style={styles.sectionTitle}>Brincos de Ouro</Text>
         <View style={styles.productsGrid}>
           {productsPage3.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />

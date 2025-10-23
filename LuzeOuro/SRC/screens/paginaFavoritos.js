@@ -1,21 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRoute } from '@react-navigation/native'; // ✅ Import necessário
+import { useRoute } from '@react-navigation/native';
 
 export default function PaginaFavoritos({ route, navigation }) {
   const [favoritos, setFavoritos] = useState([]);
-  const routeAtual = useRoute(); // ✅ Para detectar tela ativa
+  const routeAtual = useRoute();
   const currentScreen = routeAtual.name;
 
-  // 🔹 Carrega os favoritos salvos ao abrir a tela
   useEffect(() => { carregarFavoritos(); }, []);
   useEffect(() => {
     if (route.params?.produto) { adicionarFavorito(route.params.produto); }
   }, [route.params?.produto]);
 
-  // === Funções ===
   const carregarFavoritos = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem("@favoritos");
@@ -50,7 +48,6 @@ export default function PaginaFavoritos({ route, navigation }) {
     await AsyncStorage.removeItem("@favoritos");
   };
 
-  // === Renderização ===
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <Image source={{ uri: item.image }} style={styles.image} />
@@ -67,7 +64,6 @@ export default function PaginaFavoritos({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <MaterialCommunityIcons name="diamond-stone" size={24} color="#7a4f9e" />
@@ -79,7 +75,6 @@ export default function PaginaFavoritos({ route, navigation }) {
         <Ionicons name="chatbubbles-outline" size={22} color="#7a4f9e" />
       </View>
 
-      {/* Título e limpar tudo */}
       <View style={styles.topRow}>
         <Text style={styles.title}>{favoritos.length} Itens Favoritados</Text>
         {favoritos.length > 0 && (
@@ -89,7 +84,6 @@ export default function PaginaFavoritos({ route, navigation }) {
         )}
       </View>
 
-      {/* Lista */}
       {favoritos.length > 0 ? (
         <FlatList
           data={favoritos}
@@ -103,7 +97,6 @@ export default function PaginaFavoritos({ route, navigation }) {
         </View>
       )}
 
-      {/* Botão continuar */}
       <TouchableOpacity
         style={styles.continueButton}
         onPress={() => navigation.navigate("PaginaInicial")}
@@ -111,7 +104,6 @@ export default function PaginaFavoritos({ route, navigation }) {
         <Text style={styles.continueText}>Continuar explorando</Text>
       </TouchableOpacity>
 
-      {/* Navegação inferior padronizada */}
       <View style={styles.bottomNav}>
         <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
           <MaterialCommunityIcons
@@ -157,7 +149,6 @@ export default function PaginaFavoritos({ route, navigation }) {
   );
 }
 
-// === Estilos ===
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   header: {
@@ -196,7 +187,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#7a4f9e",
     padding: 14,
     borderRadius: 12,
-    margin: 16,
+    marginHorizontal: 16,
+    marginBottom: 80, // 🔹 Alterado para subir o botão acima do bottom nav
     alignItems: "center",
   },
   continueText: { color: "#fff", fontWeight: "bold", fontSize: 15 },

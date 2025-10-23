@@ -7,20 +7,20 @@ const screenWidth = Dimensions.get('window').width;
 
 // Dados dos Produtos - Mock
 const productsPage1 = [
-  { id: 1, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://lojalorella.com.br/cdn/shop/files/relogio-feminino-de-luxo-brinde-exclusivo-relogio-feminino-de-luxo-importe-go-ouro-pulseira-de-cristal-646943_640x.jpg?v=1710435914' },
-  { id: 2, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://seculus.vtexassets.com/arquivos/ids/239044-800-auto?v=638319562471670000&width=800&height=auto&aspect=true' },
+  { id: 1, type: 'Ouro', title: 'Colar de ouro Elegante', price: 'R$ 309,90', image: 'https://cdn.awsli.com.br/600x450/940/940346/produto/198470554/colar-choker-fita-slim-8d612c0eb6.jpg' },
+  { id: 2, type: 'Ouro', title: 'Colar com pingente', price: '320,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7b8qO9G1H8P9jgseoeCSRLfRj796LEFzSgg&s' },
 ];
 
 const productsPage2 = [
-  { id: 3, type: 'Prata', title: 'Conjunto Prata', price: '540,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxI5fBWItXjBrpP5LLN4gDE5U61ab_Yohz6A&s' },
-  { id: 4, type: 'Prata', title: 'Relogio Cravejado', price: '1.090,90', image: 'https://uzistore.com.br/cdn/shop/products/Relogio-Ice-Luxury-Cravejado-Prata-Estilo-Patek-2_644x.jpg?v=1725534178' },
+  { id: 3, type: 'Prata', title: 'Conjunto Prata', price: '540,90', image: 'https://cdn.sistemawbuy.com.br/arquivos/625ef789af258e29105f73822b9ad450/produtos/6661f0d01975a/mix-de-colares-trio-reluzente-6661f0d11ecec.jpg' },
+  { id: 4, type: 'Prata', title: 'Ponto de Luz Prata', price: '800,90', image: 'https://glamourpratas.cdn.magazord.com.br/img/2022/03/produto/316/colar-ponto-de-luz-coracao-prata-925-glamour-pratas.jpeg?ims=700x700' },
 ];
 
 const productsPage3 = [
-  { id: 5, type: 'Ouro', title: 'Conjunto Relogio Ouro', price: '999,90', image: 'https://lojalorella.com.br/cdn/shop/files/relogio-feminino-de-luxo-brinde-exclusivo-relogio-feminino-de-luxo-importe-go-ouro-pulseira-de-cristal-646943_640x.jpg?v=1710435914' },
-  { id: 6, type: 'Ouro e Prata', title: 'Conjunto Misto', price: '320,90', image: 'https://seculus.vtexassets.com/arquivos/ids/239044-800-auto?v=638319562471670000&width=800&height=auto&aspect=true' },
-  { id: 7, type: 'Ouro', title: 'Relogio', price: '540,90', image: 'https://d1o6h00a1h5k7q.cloudfront.net/imagens/img_m/35033/17043060.jpg' },
-  { id: 8, type: 'Ouro', title: 'Relogio com pedras', price: '800,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiqRvgMl4ZfMRGbOsXg0hT4V2vT8rKN1jOkw&s' },
+  { id: 5, type: 'Ouro', title: 'Corrente Larga', price: '999,90', image: 'https://fluiartejoias.vteximg.com.br/arquivos/ids/180890-550-550/colar-fluiarte-em-ouro-18k-malha-cordao.jpg?v=638792872233700000' },
+  { id: 6, type: 'Ouro ', title: 'Duplo Coração', price: '320,90', image: 'https://images.tcdn.com.br/img/img_prod/1094443/colar_duplo_mini_elo_com_pingente_coracao_banhado_a_ouro_12801_1_abb380983a55e344c1c17178bd21ba9f.jpg' },
+  { id: 7, type: 'Ouro', title: 'Colar de ouro Elegante', price: '309,90', image: 'https://cdn.awsli.com.br/600x450/940/940346/produto/198470554/colar-choker-fita-slim-8d612c0eb6.jpg' },
+  { id: 8, type: 'Ouro', title: 'Colar com pingente', price: '320,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7b8qO9G1H8P9jgseoeCSRLfRj796LEFzSgg&s' },
 ];
 
 // Componente de Item do Produto (Card)
@@ -45,7 +45,6 @@ const ProductCard = ({ product, user, navigation }) => (
         <FontAwesome5 name="plus" size={14} color="#fff" />
       </TouchableOpacity>
     </View>
-    
     
     <View style={styles.cardDetails}>
       <Text style={styles.productType}>{product.type}</Text>
@@ -82,21 +81,21 @@ export default function PaginaRelogios({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.sectionTitle}>Relogios Destaque</Text>
+        <Text style={styles.sectionTitle}>Colares Destaque</Text>
         <View style={styles.productsGrid}>
           {productsPage1.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Relogios de Prata</Text>
+        <Text style={styles.sectionTitle}>Colares de Prata</Text>
         <View style={styles.productsGrid}>
           {productsPage2.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Relogio de Ouro</Text>
+        <Text style={styles.sectionTitle}>Colares de Ouro</Text>
         <View style={styles.productsGrid}>
           {productsPage3.map(product => (
             <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
@@ -144,7 +143,7 @@ const styles = StyleSheet.create({
   cardContainer: { width: screenWidth / 2 - 20, marginBottom: 15, marginHorizontal: 5, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' },
   imageWrapper: { position: 'relative', width: '100%', height: 150 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  favoriteIcon: {
+ favoriteIcon: {
   position: "absolute",
   top: 10,
   right: 10,

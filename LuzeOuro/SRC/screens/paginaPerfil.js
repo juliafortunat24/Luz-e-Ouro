@@ -128,7 +128,7 @@ export default function PaginaPerfil({ navigation }) {
         <View style={styles.quickAccessRow}>
           <TouchableOpacity 
             style={styles.quickAccessButton}
-            onPress={() => navigation.navigate("PaginaPedidos")} // Ajuste a navegação
+            onPress={() => navigation.navigate("PaginaCarrinho")} // Ajuste a navegação
           >
             <Ionicons name="gift-outline" size={24} color="#7a4f9e" />
             <Text style={styles.quickAccessText}>Pedidos</Text>

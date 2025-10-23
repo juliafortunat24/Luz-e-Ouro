@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions, TextInput } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  TextInput
+} from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -9,36 +18,39 @@ const screenWidth = Dimensions.get('window').width;
 
 // --- DADOS MOCKADOS PARA PRODUTOS ---
 const products = [
-  { id: 1, type: 'Colar', material: 'Ouro', title: 'Colar de Ouro Elegante', price: 309.9, image: 'https://via.placeholder.com/150/f0e68c/000000?text=Colar+Ouro+1' },
-  { id: 2, type: 'Colar', material: 'Ouro', title: 'Colar com Pingente', price: 820.9, image: 'https://via.placeholder.com/150/ffd700/000000?text=Colar+Ouro+2' },
-  { id: 3, type: 'Anel', material: 'Prata', title: 'Anel Cravejado', price: 540.9, image: 'https://via.placeholder.com/150/e0e0e0/000000?text=Anel+Prata+1' },
-  { id: 4, type: 'Anel', material: 'Prata', title: 'Anel com Turmalina', price: 1090.9, image: 'https://via.placeholder.com/150/ADD8E6/000000?text=Anel+Prata+2' },
-  { id: 5, type: 'Brinco', material: 'Ouro Branco', title: 'Brinco Brilhante', price: 250.9, image: 'https://via.placeholder.com/150/F0E68C/000000?text=Brinco+Ouro+Branco' },
-  { id: 6, type: 'Pulseira', material: 'Prata', title: 'Pulseira Fina', price: 470.9, image: 'https://via.placeholder.com/150/D3D3D3/000000?text=Pulseira+Prata' },
-  { id: 7, type: 'Colar', material: 'Prata', title: 'Colar Brilhante', price: 90.0, image: 'https://via.placeholder.com/150/E6E6FA/000000?text=Colar+Prata+4' },
-  { id: 8, type: 'Pulseira', material: 'Ouro Branco', title: 'Pulseira de Luxo', price: 1590.9, image: 'https://via.placeholder.com/150/FAFAD2/000000?text=Pulseira+Ouro+Branco' },
+  { id: 1, type: 'Colar', material: 'Ouro', title: 'Colar de Ouro Elegante', price: 309.9, image: 'https://cdn.awsli.com.br/600x450/940/940346/produto/198470554/colar-choker-fita-slim-8d612c0eb6.jpg' },
+  { id: 2, type: 'Colar', material: 'Ouro', title: 'Colar com Pingente', price: 820.9, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7b8qO9G1H8P9jgseoeCSRLfRj796LEFzSgg&s' },
+  { id: 3, type: 'Anel', material: 'Prata', title: 'Anel Cravejado', price: 540.9, image: 'https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg' },
+  { id: 4, type: 'Anel', material: 'Ouro Branco', title: 'Anel com Turmalina', price: 1090.9, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s' },
+  { id: 5, type: 'Brinco', material: 'Prata', title: 'Brinco Brilhante', price: 250.9, image: 'https://mirianteofilojoias.com.br/wp-content/uploads/2024/07/brinco-de-prata-base-dupla-cravejada-com-perola-pendurada-2.jpg' },
+  { id: 6, type: 'Brinco', material: 'Ouro', title: 'Brinco de rosas', price: 470.9, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrMGLOhAne0y5RMCQiMfjujTlodUr3F9Xpbw&s' },
 ];
 
 // --- OPÇÕES DE FILTRO ---
 const filterOptions = {
-  tipos: ['Todos os tipos', 'Colar', 'Pulseira', 'Anel', 'Brinco'],
+  tipos: ['Todos os tipos', 'Colar', 'Relogio', 'Anel', 'Brinco'],
   materiais: ['Todos os materiais', 'Ouro', 'Prata', 'Ouro Branco'],
   precos: ['Todos os preços', 'Até R$500', 'R$500 a R$1.000', 'R$1.000 a R$1.500', 'Acima de R$1.500'],
 };
 
 // --- COMPONENTES ---
-const ProductCard = ({ product }) => (
+const ProductCard = ({ product, navigation }) => (
   <View style={styles.cardContainer}>
     <View style={styles.imageWrapper}>
       <Image source={{ uri: product.image }} style={styles.productImage} />
-      <TouchableOpacity style={styles.heartIcon}>
-        <Ionicons name="heart-outline" size={24} color="#fff" />
+      <TouchableOpacity
+        style={styles.favoriteIcon}
+        onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
+      >
+        <Ionicons name="heart-outline" size={20} color="#aaa" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.plusIcon}>
-        <Ionicons name="add-circle" size={30} color="#8a2be2" />
+      <TouchableOpacity
+        style={styles.plusIcon}
+        onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
+      >
+        <FontAwesome5 name="plus" size={14} color="#fff" />
       </TouchableOpacity>
     </View>
-
     <View style={styles.cardDetails}>
       <Text style={styles.productType}>{product.type} - {product.material}</Text>
       <Text style={styles.productTitle}>{product.title}</Text>
@@ -50,7 +62,10 @@ const ProductCard = ({ product }) => (
 const Header = () => (
   <View style={styles.header}>
     <View style={styles.logoContainer}>
-      <Image source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }} style={styles.logoImage} />
+      <Image
+        source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+        style={styles.logoImage}
+      />
       <View>
         <Text style={styles.logoText}>Luz e Ouro</Text>
         <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
@@ -62,11 +77,9 @@ const Header = () => (
   </View>
 );
 
-// --- Navbar da Página Inicial ---
-// --- Navbar da Página Inicial ---
-// Recebe currentScreen para definir o ícone ativo
+// --- Bottom Navigation ---
 const BottomNav = ({ navigation }) => {
-  const route = useRoute(); // pega a rota atual
+  const route = useRoute();
   const currentScreen = route.name;
 
   return (
@@ -78,15 +91,13 @@ const BottomNav = ({ navigation }) => {
           color={currentScreen === "PaginaInicial" ? "#7a4f9e" : "#aaa"}
         />
       </TouchableOpacity>
-
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFiltros")}>
         <Ionicons
           name={currentScreen === "PaginaFiltros" ? "search" : "search-outline"}
           size={28}
-          color={currentScreen === "PaginaFiltros" ? "#7a4f9e" : "#aaa"} // 🔹 roxo quando ativo
+          color={currentScreen === "PaginaFiltros" ? "#7a4f9e" : "#aaa"}
         />
       </TouchableOpacity>
-
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFavoritos")}>
         <Ionicons
           name={currentScreen === "PaginaFavoritos" ? "heart" : "heart-outline"}
@@ -94,7 +105,6 @@ const BottomNav = ({ navigation }) => {
           color={currentScreen === "PaginaFavoritos" ? "#7a4f9e" : "#aaa"}
         />
       </TouchableOpacity>
-
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaCarrinho")}>
         <Ionicons
           name={currentScreen === "PaginaCarrinho" ? "cart" : "cart-outline"}
@@ -102,7 +112,6 @@ const BottomNav = ({ navigation }) => {
           color={currentScreen === "PaginaCarrinho" ? "#7a4f9e" : "#aaa"}
         />
       </TouchableOpacity>
-
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
         <Ionicons
           name={currentScreen === "PaginaPerfil" ? "person" : "person-outline"}
@@ -114,7 +123,6 @@ const BottomNav = ({ navigation }) => {
   );
 };
 
-
 // --- TELA PRINCIPAL ---
 export default function CatalogScreen({ navigation }) {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -124,24 +132,30 @@ export default function CatalogScreen({ navigation }) {
     precos: 'Todos os preços',
   });
 
-  // Função de filtro
   const filteredProducts = products.filter(p => {
     const matchTipo = selectedFilters.tipos === 'Todos os tipos' || p.type === selectedFilters.tipos;
     const matchMaterial = selectedFilters.materiais === 'Todos os materiais' || p.material === selectedFilters.materiais;
     const price = p.price;
-
     let matchPreco = true;
+
     switch (selectedFilters.precos) {
-      case 'Até R$500': matchPreco = price <= 500; break;
-      case 'R$500 a R$1.000': matchPreco = price > 500 && price <= 1000; break;
-      case 'R$1.000 a R$1.500': matchPreco = price > 1000 && price <= 1500; break;
-      case 'Acima de R$1.500': matchPreco = price > 1500; break;
+      case 'Até R$500':
+        matchPreco = price <= 500;
+        break;
+      case 'R$500 a R$1.000':
+        matchPreco = price > 500 && price <= 1000;
+        break;
+      case 'R$1.000 a R$1.500':
+        matchPreco = price > 1000 && price <= 1500;
+        break;
+      case 'Acima de R$1.500':
+        matchPreco = price > 1500;
+        break;
     }
 
     return matchTipo && matchMaterial && matchPreco;
   });
 
-  // Renderiza dropdowns
   const renderDropdown = (key) => (
     <View style={styles.dropdownMenu}>
       {filterOptions[key].map((option, index) => (
@@ -165,9 +179,7 @@ export default function CatalogScreen({ navigation }) {
         style={[styles.filterDropdownButton, openDropdown === key && styles.filterDropdownButtonActive]}
         onPress={() => setOpenDropdown(openDropdown === key ? null : key)}
       >
-        <Text style={styles.filterButtonText}>
-          {selectedFilters[key] || placeholder}
-        </Text>
+        <Text style={styles.filterButtonText}> {selectedFilters[key] || placeholder} </Text>
         <Ionicons name={openDropdown === key ? "chevron-up" : "chevron-down"} size={20} color="#666" />
       </TouchableOpacity>
       {openDropdown === key && renderDropdown(key)}
@@ -177,36 +189,30 @@ export default function CatalogScreen({ navigation }) {
   return (
     <View style={styles.screenContainer}>
       <Header />
-
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={20} color="#999" style={styles.searchIcon} />
         <TextInput style={styles.searchInput} placeholder="Buscar" placeholderTextColor="#999" />
       </View>
-
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.filtersBox}>
           <View style={styles.filtersHeader}>
             <Feather name="filter" size={18} color="#333" />
             <Text style={styles.filtersTitle}>Filtros</Text>
           </View>
-
           {renderFilterItem('tipos', 'Todos os tipos')}
           {renderFilterItem('materiais', 'Todos os materiais')}
           {renderFilterItem('precos', 'Todos os preços')}
         </View>
-
         <View style={styles.productsGrid}>
           {filteredProducts.length > 0 ? (
-            filteredProducts.map(p => <ProductCard key={p.id} product={p} />)
+            filteredProducts.map(p => <ProductCard key={p.id} product={p} navigation={navigation} />)
           ) : (
             <Text style={{ textAlign: 'center', marginTop: 20 }}>Nenhum produto encontrado.</Text>
           )}
         </View>
-
         <View style={{ height: 50 }} />
       </ScrollView>
-
-      {/* 👇 Substituímos o FooterNav antigo pela navbar da página inicial */}
+      {/* 👇 Navbar atualizada */}
       <BottomNav navigation={navigation} />
     </View>
   );
@@ -238,8 +244,8 @@ const styles = StyleSheet.create({
   cardContainer: { width: screenWidth / 2 - 22, marginBottom: 15, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.41, elevation: 2 },
   imageWrapper: { position: 'relative', width: '100%', height: screenWidth / 2 - 22 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  heartIcon: { position: 'absolute', top: 8, right: 8, padding: 5 },
-  plusIcon: { position: 'absolute', bottom: 8, right: 8, padding: 2 },
+  favoriteIcon: { position: "absolute", top: 10, right: 10, backgroundColor: "#fff", borderRadius: 15, padding: 5 },
+  plusIcon: { position: "absolute", bottom: 10, right: 10, backgroundColor: "#7a4f9e", borderRadius: 12, padding: 6 },
   cardDetails: { padding: 10, minHeight: 80 },
   productType: { fontSize: 13, color: '#666', marginBottom: 2 },
   productTitle: { fontSize: 14, fontWeight: '600', marginBottom: 5, color: '#333' },
