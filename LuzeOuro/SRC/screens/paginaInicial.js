@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, ScrollView, ActivityIndicator } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../supabaseClient'; // Importação correta do cliente Supabase
 
 const categories = [
   { id: "1", name: "Anéis", icon: "diamond", screen: "PaginaAneis" },
@@ -11,31 +11,66 @@ const categories = [
   { id: "4", name: "Brincos", icon: "crown", screen: "PaginaBrincos" },
 ];
 
-const featuredProducts = [
-  { id: "1", type: "Ouro", name: "Colar de ouro Elegante", price: "R$ 309,90", image: "https://cdn.awsli.com.br/600x450/940/940346/produto/198470554/colar-choker-fita-slim-8d612c0eb6.jpg" },
-  { id: "2", type: "Ouro", name: "Colar com pingente", price: "R$ 320,90", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7b8qO9G1H8P9jgseoeCSRLfRj796LEFzSgg&s" },
-  { id: "3", type: "Prata", name: "Anel Cravejado", price: "R$ 540,90", image: "https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg" },
-  { id: "4", type: "Ouro Branco", name: "Anel com Turmalina", price: "R$ 1.090,90", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s" },
-  { id: "5", type: "Ouro", name: "Brinco Brilhante", price: "R$ 200,90", image: "https://images.tcdn.com.br/img/img_prod/1002469/brinco_bola_dourado_com_strass_558272_2_c2099a80b2b263f8c862d4f3f768ce07.jpg" },
-  { id: "6", type: "Prata", name: "Brinco de Estrela", price: "R$ 200,90", image: "https://images.tcdn.com.br/img/img_prod/754400/brinco_de_estrela_vazada_prata_925_13361_1_cd8ab73390310927498a4b1ca479a36f.jpg" },
-];
-
-const launches = [
-  { id: "6", type: "Ouro Branco", name: "Anel com Turmalina", price: "R$ 1.090,90", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s" },
-];
+// Removendo os dados mockados, vamos buscar os produtos reais do Supabase.
+// const featuredProducts = [...]; 
+// const launches = [...]; 
 
 export default function App({ navigation }) {
   const [favorites, setFavorites] = useState([]);
   const [user, setUser] = useState(null);
+  // ⭐️ Novo estado para armazenar os produtos do Supabase
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Pega usuário logado do Supabase
+  // Função para buscar os produtos do Supabase
+  const fetchProducts = async () => {
+    setLoading(true);
+    // ⚠️ Atenção: 'public.produtos' é o nome da sua tabela que aparece nas imagens
+    // Certifique-se de que o nome da tabela está correto.
+    const { data, error } = await supabase
+      .from('produtos')
+      .select('id, nome, preco, material, tipo, foto_url') // Seleciona as colunas necessárias
+      .order('id', { ascending: false }); // Exemplo: ordena pelo 'id'
+
+    if (error) {
+      console.error('Erro ao buscar produtos:', error);
+      setLoading(false);
+      return;
+    }
+
+    if (data) {
+      // Mapeia os dados do Supabase para o formato esperado pelo seu `renderProductItem`
+      const formattedProducts = data.map(item => ({
+        id: item.id,
+        // Certifique-se de que os nomes das colunas aqui (item.nome, item.preco, etc.) 
+        // correspondem exatamente aos nomes no seu banco (nome, preco, material, tipo, foto).
+        type: item.material, // Usando 'material' como 'type'
+        name: item.nome,
+        price: `R$ ${parseFloat(item.preco).toFixed(2).replace('.', ',')}`, // Formata o preço
+        image: item.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
+      }));
+
+      setProducts(formattedProducts);
+    }
+    setLoading(false);
+  };
+
+  // Pega usuário logado do Supabase e busca os produtos
   useEffect(() => {
-    const getUser = async () => {
+    const initializeData = async () => {
+      // Pega usuário logado
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+
+      // Busca os produtos
+      await fetchProducts();
     };
-    getUser();
+    initializeData();
   }, []);
+
+  // Filtra produtos para simular 'Destaques' e 'Lançamentos'
+  const featuredProducts = products.filter((_, index) => index < 4); // Exemplo: os 4 primeiros produtos
+  const launches = products.filter((_, index) => index < 2); // Exemplo: os 2 primeiros produtos
 
   const renderCategory = ({ item }) => (
     <TouchableOpacity
@@ -59,7 +94,12 @@ export default function App({ navigation }) {
 
   const renderProductItem = ({ item }) => (
     <View style={styles.productCard}>
-      <Image source={{ uri: item.image }} style={styles.productImage} />
+      <Image
+        source={{ uri: item.image }}
+        style={styles.productImage}
+        resizeMode="cover"
+        onError={(e) => console.log('Erro ao carregar imagem:', e.nativeEvent.error)}
+      />
 
       <TouchableOpacity
         style={styles.favoriteIcon}
@@ -107,13 +147,13 @@ export default function App({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* ... Header e Carrossel ... */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Image
+          {/*<Image
             source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
             style={styles.logoImage}
-          />
+          /> */}
           <View>
             <Text style={styles.logoText}>Luz e Ouro</Text>
             <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
@@ -156,36 +196,43 @@ export default function App({ navigation }) {
           }}
         />
 
-        {/* Produtos em destaque */}
-        <Text style={styles.sectionTitle}>Produtos em Destaque</Text>
-        <FlatList
-          data={featuredProducts}
-          renderItem={renderProductItem}
-          keyExtractor={(item) => item.id}
-          horizontal={false}
-          numColumns={2}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 10 }}
-        />
+        {/* Exibe o indicador de carregamento ou a lista de produtos */}
+        {loading ? (
+          <ActivityIndicator size="large" color="#7a4f9e" style={{ marginTop: 50 }} />
+        ) : (
+          <>
+            {/* Produtos em destaque */}
+            <Text style={styles.sectionTitle}>Produtos em Destaque</Text>
+            <FlatList
+              data={featuredProducts} // Agora usa os produtos buscados
+              renderItem={renderProductItem}
+              keyExtractor={(item) => item.id}
+              horizontal={false}
+              numColumns={2}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 10 }}
+            />
 
-        {/* Lançamentos */}
-        <Text style={styles.sectionTitle}>
-          Lançamentos <Text style={{ fontWeight: "700", color: "#7a4f9e" }}>NOVO</Text>
-        </Text>
-        <FlatList
-          data={launches}
-          renderItem={renderProductItem}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 20 }}
-        />
+            {/* Lançamentos */}
+            <Text style={styles.sectionTitle}>
+              Lançamentos <Text style={{ fontWeight: "700", color: "#7a4f9e" }}>NOVO</Text>
+            </Text>
+            <FlatList
+              data={launches} // Agora usa os produtos buscados
+              renderItem={renderProductItem}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 20 }}
+            />
+          </>
+        )}
 
         {/* Botão admin */}
         {renderAdminButton()}
       </ScrollView>
 
-      {/* Bottom Navigation */}
+      {/* ... Bottom Navigation ... */}
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaInicial")}>
           <MaterialCommunityIcons name="home" size={28} color="#7a4f9e" />
@@ -211,7 +258,7 @@ export default function App({ navigation }) {
   );
 }
 
-// --- Estilos ---
+// --- Estilos (Não alterados) ---
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   header: {
