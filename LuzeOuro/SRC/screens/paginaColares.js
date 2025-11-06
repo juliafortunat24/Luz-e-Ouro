@@ -1,35 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
 const screenWidth = Dimensions.get('window').width;
 
-// Dados dos Produtos - Mock
-const productsPage1 = [
-  { id: 1, type: 'Ouro', title: 'Colar de ouro Elegante', price: 'R$ 309,90', image: 'https://cdn.awsli.com.br/600x450/940/940346/produto/198470554/colar-choker-fita-slim-8d612c0eb6.jpg' },
-  { id: 2, type: 'Ouro', title: 'Colar com pingente', price: '320,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7b8qO9G1H8P9jgseoeCSRLfRj796LEFzSgg&s' },
-];
-
-const productsPage2 = [
-  { id: 3, type: 'Prata', title: 'Conjunto Prata', price: '540,90', image: 'https://cdn.sistemawbuy.com.br/arquivos/625ef789af258e29105f73822b9ad450/produtos/6661f0d01975a/mix-de-colares-trio-reluzente-6661f0d11ecec.jpg' },
-  { id: 4, type: 'Prata', title: 'Ponto de Luz Prata', price: '800,90', image: 'https://glamourpratas.cdn.magazord.com.br/img/2022/03/produto/316/colar-ponto-de-luz-coracao-prata-925-glamour-pratas.jpeg?ims=700x700' },
-];
-
-const productsPage3 = [
-  { id: 5, type: 'Ouro', title: 'Corrente Larga', price: '999,90', image: 'https://fluiartejoias.vteximg.com.br/arquivos/ids/180890-550-550/colar-fluiarte-em-ouro-18k-malha-cordao.jpg?v=638792872233700000' },
-  { id: 6, type: 'Ouro ', title: 'Duplo Coração', price: '320,90', image: 'https://images.tcdn.com.br/img/img_prod/1094443/colar_duplo_mini_elo_com_pingente_coracao_banhado_a_ouro_12801_1_abb380983a55e344c1c17178bd21ba9f.jpg' },
-  { id: 7, type: 'Ouro', title: 'Colar de ouro Elegante', price: '309,90', image: 'https://cdn.awsli.com.br/600x450/940/940346/produto/198470554/colar-choker-fita-slim-8d612c0eb6.jpg' },
-  { id: 8, type: 'Ouro', title: 'Colar com pingente', price: '320,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7b8qO9G1H8P9jgseoeCSRLfRj796LEFzSgg&s' },
-];
-
 // Componente de Item do Produto (Card)
 const ProductCard = ({ product, user, navigation }) => (
   <View style={styles.cardContainer}>
     <View style={styles.imageWrapper}>
-      <Image source={{ uri: product.image }} style={styles.productImage} />
+      <Image
+        source={{ uri: product.foto_url || 'https://placehold.co/200x200?text=Sem+Imagem' }}
+        style={styles.productImage}
+      />
 
-      {/* Ícone de Favorito (igual à Página Inicial) */}
+      {/* Ícone de Favorito */}
       <TouchableOpacity
         style={styles.favoriteIcon}
         onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
@@ -37,7 +22,7 @@ const ProductCard = ({ product, user, navigation }) => (
         <Ionicons name="heart-outline" size={20} color="#aaa" />
       </TouchableOpacity>
 
-      {/* Ícone de + (igual à Página Inicial) */}
+      {/* Ícone de Carrinho */}
       <TouchableOpacity
         style={styles.plusIcon}
         onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
@@ -47,30 +32,45 @@ const ProductCard = ({ product, user, navigation }) => (
     </View>
 
     <View style={styles.cardDetails}>
-      <Text style={styles.productType}>{product.type}</Text>
-      <Text style={styles.productTitle}>{product.title}</Text>
-      <Text style={styles.productPrice}>R$ {product.price}</Text>
+      <Text style={styles.productType}>{product.material}</Text>
+      <Text style={styles.productTitle}>{product.nome}</Text>
+      <Text style={styles.productPrice}>R$ {parseFloat(product.preco).toFixed(2).replace('.', ',')}</Text>
     </View>
   </View>
 );
 
 // Componente Principal
-export default function PaginaRelogios({ navigation }) {
+export default function PaginaColares({ navigation }) {
   const [user, setUser] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Pega usuário logado do Supabase
+  // Pega usuário logado e produtos do tipo "Colar"
   useEffect(() => {
-    const getUser = async () => {
+    const getUserAndProducts = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+
+      // Busca apenas produtos cujo tipo contenha "Colar"
+      const { data, error } = await supabase
+        .from('produtos')
+        .select('id, nome, preco, material, tipo, foto_url')
+        .ilike('tipo', '%Colar%'); // <- Insensível a maiúsculas/minúsculas
+
+      if (error) {
+        console.error('Erro ao buscar colares:', error);
+      } else {
+        setProducts(data);
+      }
+      setLoading(false);
     };
-    getUser();
+
+    getUserAndProducts();
   }, []);
 
   return (
     <View style={styles.screenContainer}>
       {/* Header */}
-      {/* Header (igual ao da Página de Filtros) */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image
@@ -84,29 +84,22 @@ export default function PaginaRelogios({ navigation }) {
         </View>
       </View>
 
-
-
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.sectionTitle}>Colares Destaque</Text>
-        <View style={styles.productsGrid}>
-          {productsPage1.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
+        <Text style={styles.sectionTitle}>Colares</Text>
 
-        <Text style={styles.sectionTitle}>Colares de Prata</Text>
-        <View style={styles.productsGrid}>
-          {productsPage2.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
-
-        <Text style={styles.sectionTitle}>Colares de Ouro</Text>
-        <View style={styles.productsGrid}>
-          {productsPage3.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
+        {loading ? (
+          <ActivityIndicator size="large" color="#7a4f9e" style={{ marginTop: 50 }} />
+        ) : products.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 50, color: '#777' }}>
+            Nenhum colar encontrado.
+          </Text>
+        ) : (
+          <View style={styles.productsGrid}>
+            {products.map(product => (
+              <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Navigation */}
@@ -145,13 +138,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 15,
     paddingVertical: 10,
-    paddingTop: 45, // mesmo espaçamento da página de filtros
+    paddingTop: 45,
     backgroundColor: '#fff',
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
   logoImage: {
     width: 35,
     height: 35,
@@ -159,21 +149,23 @@ const styles = StyleSheet.create({
     marginRight: 10,
     backgroundColor: '#7a4f9e',
   },
-  logoText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  logoSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: -3,
-  },
-
-  logoBox: { backgroundColor: "#7a4f9e", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 2 },
+  logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginVertical: 15 },
-  productsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginHorizontal: -5 },
-  cardContainer: { width: screenWidth / 2 - 20, marginBottom: 15, marginHorizontal: 5, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' },
+  productsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginHorizontal: -5,
+  },
+  cardContainer: {
+    width: screenWidth / 2 - 20,
+    marginBottom: 15,
+    marginHorizontal: 5,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
   imageWrapper: { position: 'relative', width: '100%', height: 150 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   favoriteIcon: {
@@ -192,11 +184,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 6,
   },
-
   cardDetails: { padding: 10 },
   productType: { fontSize: 14, color: '#555', marginBottom: 2 },
   productTitle: { fontSize: 15, fontWeight: '600', marginBottom: 5, color: '#333' },
   productPrice: { fontSize: 16, fontWeight: 'bold', color: '#8a2be2' },
-  bottomNav: { height: 60, borderTopWidth: 1, borderTopColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5 },
+  bottomNav: {
+    height: 60,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingBottom: 5,
+  },
   navItem: { flex: 1, alignItems: "center" },
 });

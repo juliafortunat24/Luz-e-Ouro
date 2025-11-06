@@ -1,35 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
 const screenWidth = Dimensions.get('window').width;
 
-// Dados dos Produtos - Mock
-const productsPage1 = [
-  { id: 1, type: 'Prata', title: 'Conjunto de brincos brilhantes', price: '100,90', image: 'https://mirianteofilojoias.com.br/wp-content/uploads/2024/07/brinco-de-prata-base-dupla-cravejada-com-perola-pendurada-2.jpg' },
-  { id: 2, type: 'Ouro e Prata', title: 'Brinco ponto de luz', price: '800,90', image: 'https://cdn.sistemawbuy.com.br/arquivos/e7821c0356b6dfb669d775a599d09550/produtos/663e7a4e6739d/brinco-argola-ponto-de-luz-banhado-a-ouro-66f455b632eec.jpg' },
-];
-
-const productsPage2 = [
-  { id: 3, type: 'Prata', title: 'Conjunto de brincos brilhantes', price: '100,90', image: 'https://mirianteofilojoias.com.br/wp-content/uploads/2024/07/brinco-de-prata-base-dupla-cravejada-com-perola-pendurada-2.jpg' },
-  { id: 4, type: 'Prata', title: 'Brincos prata torcidos', price: '120,90', image: 'https://maisejoias.bwimg.com.br/maisejoias/produtos/brinco-quatro-fios-em-prata-925-1733788515.5791.jpg' },
-];
-
-const productsPage3 = [
-  { id: 5, type: 'Ouro', title: 'Triozinho de ouro', price: '200,90', image: 'https://images.tcdn.com.br/img/img_prod/643537/brinco_de_ouro_18k_bola_9mm_adulto_60_4_28bbe4b63cd9cd87092fd19a73de61aa_20250819171702.jpeg' },
-  { id: 6, type: 'Ouro', title: 'Brinco flores', price: '320,90', image: 'https://images.tcdn.com.br/img/img_prod/1094443/brinco_flor_4_petalas_com_pingente_flor_banhado_a_ouro_19017_1_2b007ff9dfeec0507d61cab73276c812.jpg' },
-  { id: 7, type: 'Ouro', title: 'Brinco de rosas', price: '540,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrMGLOhAne0y5RMCQiMfjujTlodUr3F9Xpbw&s' },
-  { id: 8, type: 'Ouro', title: 'Brinco ponto de luz', price: '800,90', image: 'https://cdn.sistemawbuy.com.br/arquivos/e7821c0356b6dfb669d775a599d09550/produtos/663e7a4e6739d/brinco-argola-ponto-de-luz-banhado-a-ouro-66f455b632eec.jpg' },
-];
-
 // Componente de Item do Produto (Card)
 const ProductCard = ({ product, user, navigation }) => (
   <View style={styles.cardContainer}>
     <View style={styles.imageWrapper}>
-      <Image source={{ uri: product.image }} style={styles.productImage} />
+      <Image
+        source={{ uri: product.foto_url || 'https://placehold.co/200x200?text=Sem+Imagem' }}
+        style={styles.productImage}
+      />
 
-      {/* Ícone de Favorito (igual à Página Inicial) */}
+      {/* Ícone de Favorito */}
       <TouchableOpacity
         style={styles.favoriteIcon}
         onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
@@ -37,7 +22,7 @@ const ProductCard = ({ product, user, navigation }) => (
         <Ionicons name="heart-outline" size={20} color="#aaa" />
       </TouchableOpacity>
 
-      {/* Ícone de + (igual à Página Inicial) */}
+      {/* Ícone de Carrinho */}
       <TouchableOpacity
         style={styles.plusIcon}
         onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
@@ -46,32 +31,46 @@ const ProductCard = ({ product, user, navigation }) => (
       </TouchableOpacity>
     </View>
 
-
     <View style={styles.cardDetails}>
-      <Text style={styles.productType}>{product.type}</Text>
-      <Text style={styles.productTitle}>{product.title}</Text>
-      <Text style={styles.productPrice}>R$ {product.price}</Text>
+      <Text style={styles.productType}>{product.material}</Text>
+      <Text style={styles.productTitle}>{product.nome}</Text>
+      <Text style={styles.productPrice}>R$ {parseFloat(product.preco).toFixed(2).replace('.', ',')}</Text>
     </View>
   </View>
 );
 
 // Componente Principal
-export default function PaginaRelogios({ navigation }) {
+export default function PaginaBrincos({ navigation }) {
   const [user, setUser] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Pega usuário logado do Supabase
+  // Pega usuário logado e busca produtos do tipo "Brinco"
   useEffect(() => {
-    const getUser = async () => {
+    const getUserAndProducts = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+
+      // Busca todos os produtos com tipo "Brinco"
+      const { data, error } = await supabase
+        .from('produtos')
+        .select('id, nome, preco, material, tipo, foto_url')
+        .ilike('tipo', '%Brinco%'); // <-- Filtra todos que tenham "Brinco" no tipo
+
+      if (error) {
+        console.error('Erro ao buscar brincos:', error);
+      } else {
+        setProducts(data);
+      }
+      setLoading(false);
     };
-    getUser();
+
+    getUserAndProducts();
   }, []);
 
   return (
     <View style={styles.screenContainer}>
       {/* Header */}
-      {/* Header (igual ao da Página de Filtros) */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image
@@ -85,29 +84,23 @@ export default function PaginaRelogios({ navigation }) {
         </View>
       </View>
 
-
-
+      {/* Conteúdo */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.sectionTitle}>Brincos Destaque</Text>
-        <View style={styles.productsGrid}>
-          {productsPage1.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
+        <Text style={styles.sectionTitle}>Brincos</Text>
 
-        <Text style={styles.sectionTitle}>Brincos de Prata</Text>
-        <View style={styles.productsGrid}>
-          {productsPage2.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
-
-        <Text style={styles.sectionTitle}>Brincos de Ouro</Text>
-        <View style={styles.productsGrid}>
-          {productsPage3.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
+        {loading ? (
+          <ActivityIndicator size="large" color="#7a4f9e" style={{ marginTop: 50 }} />
+        ) : products.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 50, color: '#777' }}>
+            Nenhum brinco encontrado.
+          </Text>
+        ) : (
+          <View style={styles.productsGrid}>
+            {products.map(product => (
+              <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Navigation */}
@@ -146,13 +139,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 15,
     paddingVertical: 10,
-    paddingTop: 45, // mesmo espaçamento da página de filtros
+    paddingTop: 45,
     backgroundColor: '#fff',
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
   logoImage: {
     width: 35,
     height: 35,
@@ -160,21 +150,23 @@ const styles = StyleSheet.create({
     marginRight: 10,
     backgroundColor: '#7a4f9e',
   },
-  logoText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  logoSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: -3,
-  },
-
-  logoBox: { backgroundColor: "#7a4f9e", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 2 },
+  logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginVertical: 15 },
-  productsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginHorizontal: -5 },
-  cardContainer: { width: screenWidth / 2 - 20, marginBottom: 15, marginHorizontal: 5, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' },
+  productsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginHorizontal: -5,
+  },
+  cardContainer: {
+    width: screenWidth / 2 - 20,
+    marginBottom: 15,
+    marginHorizontal: 5,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
   imageWrapper: { position: 'relative', width: '100%', height: 150 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   favoriteIcon: {
@@ -193,11 +185,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 6,
   },
-
   cardDetails: { padding: 10 },
   productType: { fontSize: 14, color: '#555', marginBottom: 2 },
   productTitle: { fontSize: 15, fontWeight: '600', marginBottom: 5, color: '#333' },
   productPrice: { fontSize: 16, fontWeight: 'bold', color: '#8a2be2' },
-  bottomNav: { height: 60, borderTopWidth: 1, borderTopColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5 },
+  bottomNav: {
+    height: 60,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingBottom: 5,
+  },
   navItem: { flex: 1, alignItems: "center" },
 });

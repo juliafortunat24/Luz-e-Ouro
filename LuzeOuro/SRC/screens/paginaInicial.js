@@ -11,9 +11,7 @@ const categories = [
   { id: "4", name: "Brincos", icon: "crown", screen: "PaginaBrincos" },
 ];
 
-// Removendo os dados mockados, vamos buscar os produtos reais do Supabase.
-// const featuredProducts = [...]; 
-// const launches = [...]; 
+ 
 
 export default function App({ navigation }) {
   const [favorites, setFavorites] = useState([]);
@@ -22,7 +20,6 @@ export default function App({ navigation }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Função para buscar os produtos do Supabase
   const fetchProducts = async () => {
     setLoading(true);
     // ⚠️ Atenção: 'public.produtos' é o nome da sua tabela que aparece nas imagens
@@ -69,7 +66,7 @@ export default function App({ navigation }) {
   }, []);
 
   // Filtra produtos para simular 'Destaques' e 'Lançamentos'
-  const featuredProducts = products.filter((_, index) => index < 4); // Exemplo: os 4 primeiros produtos
+  const featuredProducts = products; // Exemplo: os 4 primeiros produtos
   const launches = products.filter((_, index) => index < 2); // Exemplo: os 2 primeiros produtos
 
   const renderCategory = ({ item }) => (

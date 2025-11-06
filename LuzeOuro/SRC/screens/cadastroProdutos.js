@@ -131,7 +131,7 @@ export default function CadastrarProdutos({ navigation }) {
       <View style={styles.pickerWrapper}>
         <Text style={styles.pickerLabel}>Tipo</Text>
         <View style={styles.pickerContainer}>
-          {["Colar", "Pulseira", "Anéis", "Brincos"].map((item, index) => (
+          {["Colar", "Relogios", "Anéis", "Brincos"].map((item, index) => (
             <TouchableOpacity
               key={item}
               style={[styles.option, index === 3 && { borderRightWidth: 0 }]}

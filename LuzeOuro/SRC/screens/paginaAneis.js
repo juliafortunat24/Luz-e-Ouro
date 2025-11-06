@@ -1,34 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
 const screenWidth = Dimensions.get('window').width;
 
-// Dados dos Produtos - Mock
-const productsPage1 = [
-  { id: 1, type: 'Ouro Branco', title: 'Anel com Turmalina', price: '1.090,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s' },
-  { id: 2, type: 'Prata', title: 'Anel Cravejado', price: '540,90', image: 'https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg' },
-];
-
-const productsPage2 = [
-  { id: 3, type: 'Prata', title: 'Anel Cravejado', price: '540,90', image: 'https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg' },
-  { id: 4, type: 'Prata', title: 'Conjunto Anel Ondas', price: '300,00', image: 'https://images.tcdn.com.br/img/img_prod/1329818/anel_prata_925_minimalista_ondulado_aro_liso_5317_1_c653b0821b7b470b5e967c220fedb154.jpg' }
-];
-const productsPage3 = [
-  { id: 5, type: 'Ouro', title: 'Anel brilhante', price: '999,90', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAoWe2nQobAHp5hUp2jTwDYU5UZvHq368cjA&s' },
-  { id: 6, type: 'Ouro', title: 'Anel de Ouro Largo', price: '320,90', image: 'https://www.aquajoias.com.br/upload/produto/imagem/b_anel-de-ouro-18k-chapado-liso.jpg' },
-  { id: 7, type: 'Ouro', title: 'Anel asa de anjo', price: '540,90', image: 'https://img.irroba.com.br/fit-in/600x600/filters:fill(fff):quality(80)/portalii/catalog/aneis-de-noivado/saron/sarona-novo-gesso/anel-de-ouro-09.jpg' },
-  { id: 8, type: 'Ouro', title: 'Anel de ouro torcido', price: '800,90', image: 'https://cdn.todoanel.com.br/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/a/n/anel_solitario_de_ouro_18k_aro_trancado.jpeg' },
-];
-
-// Componente de Item do Produto (Card)
 const ProductCard = ({ product, user, navigation }) => (
   <View style={styles.cardContainer}>
     <View style={styles.imageWrapper}>
-      <Image source={{ uri: product.image }} style={styles.productImage} />
+      <Image source={{ uri: product.foto_url }} style={styles.productImage} />
 
-      {/* Ícone de Favorito (igual à Página Inicial) */}
+      {/* Ícone de Favorito */}
       <TouchableOpacity
         style={styles.favoriteIcon}
         onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
@@ -36,7 +18,7 @@ const ProductCard = ({ product, user, navigation }) => (
         <Ionicons name="heart-outline" size={20} color="#aaa" />
       </TouchableOpacity>
 
-      {/* Ícone de + (igual à Página Inicial) */}
+      {/* Ícone de Adicionar ao Carrinho */}
       <TouchableOpacity
         style={styles.plusIcon}
         onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
@@ -45,32 +27,48 @@ const ProductCard = ({ product, user, navigation }) => (
       </TouchableOpacity>
     </View>
 
-
     <View style={styles.cardDetails}>
-      <Text style={styles.productType}>{product.type}</Text>
-      <Text style={styles.productTitle}>{product.title}</Text>
-      <Text style={styles.productPrice}>R$ {product.price}</Text>
+      <Text style={styles.productType}>{product.material}</Text>
+      <Text style={styles.productTitle}>{product.nome}</Text>
+      <Text style={styles.productPrice}>R$ {parseFloat(product.preco).toFixed(2).replace('.', ',')}</Text>
     </View>
   </View>
 );
 
-// Componente Principal
-export default function PaginaRelogios({ navigation }) {
+export default function PaginaAneis({ navigation }) {
   const [user, setUser] = useState(null);
+  const [aneis, setAneis] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Pega usuário logado do Supabase
+  // 🔹 Busca produtos do tipo "aneis" no Supabase
+  const fetchAneis = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('produtos')
+      .select('id, nome, preco, material, tipo, foto_url')
+      .ilike('tipo', '%Ané%')
+      .order('id', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar anéis:', error);
+    } else {
+      setAneis(data);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const getUser = async () => {
+    const getUserAndProducts = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      await fetchAneis();
     };
-    getUser();
+    getUserAndProducts();
   }, []);
 
   return (
     <View style={styles.screenContainer}>
       {/* Header */}
-      {/* Header (igual ao da Página de Filtros) */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image
@@ -84,29 +82,22 @@ export default function PaginaRelogios({ navigation }) {
         </View>
       </View>
 
-
-
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.sectionTitle}>Aneis Destaque</Text>
-        <View style={styles.productsGrid}>
-          {productsPage1.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
+        <Text style={styles.sectionTitle}>Anéis</Text>
 
-        <Text style={styles.sectionTitle}>Aneis de Prata</Text>
-        <View style={styles.productsGrid}>
-          {productsPage2.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
-
-        <Text style={styles.sectionTitle}>Aneis de Ouro</Text>
-        <View style={styles.productsGrid}>
-          {productsPage3.map(product => (
-            <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
-          ))}
-        </View>
+        {loading ? (
+          <ActivityIndicator size="large" color="#7a4f9e" style={{ marginTop: 50 }} />
+        ) : aneis.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 30, color: '#555' }}>
+            Nenhum anel encontrado.
+          </Text>
+        ) : (
+          <View style={styles.productsGrid}>
+            {aneis.map((product) => (
+              <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Navigation */}
@@ -145,54 +136,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 15,
     paddingVertical: 10,
-    paddingTop: 45, // mesmo espaçamento da página de filtros
+    paddingTop: 45,
     backgroundColor: '#fff',
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoImage: {
-    width: 35,
-    height: 35,
-    borderRadius: 5,
-    marginRight: 10,
-    backgroundColor: '#7a4f9e',
-  },
-  logoText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  logoSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: -3,
-  },
-
-  logoBox: { backgroundColor: "#7a4f9e", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 2 },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
+  logoImage: { width: 35, height: 35, borderRadius: 5, marginRight: 10, backgroundColor: '#7a4f9e' },
+  logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginVertical: 15 },
   productsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginHorizontal: -5 },
   cardContainer: { width: screenWidth / 2 - 20, marginBottom: 15, marginHorizontal: 5, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' },
   imageWrapper: { position: 'relative', width: '100%', height: 150 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  favoriteIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    padding: 5,
-  },
-  plusIcon: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-    backgroundColor: "#7a4f9e",
-    borderRadius: 12,
-    padding: 6,
-  },
-
+  favoriteIcon: { position: "absolute", top: 10, right: 10, backgroundColor: "#fff", borderRadius: 15, padding: 5 },
+  plusIcon: { position: "absolute", bottom: 10, right: 10, backgroundColor: "#7a4f9e", borderRadius: 12, padding: 6 },
   cardDetails: { padding: 10 },
   productType: { fontSize: 14, color: '#555', marginBottom: 2 },
   productTitle: { fontSize: 15, fontWeight: '600', marginBottom: 5, color: '#333' },
