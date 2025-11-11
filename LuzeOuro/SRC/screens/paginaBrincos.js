@@ -24,11 +24,12 @@ const ProductCard = ({ product, user, navigation }) => (
 
       {/* Ícone de Carrinho */}
       <TouchableOpacity
-        style={styles.plusIcon}
-        onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
-      >
-        <FontAwesome5 name="plus" size={14} color="#fff" />
-      </TouchableOpacity>
+              style={styles.plusIcon}
+              onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
+            >
+              {/* Substituí FontAwesome5 name="plus" por Ionicons name="cart-outline" */}
+              <Ionicons name="cart-outline" size={18} color="#fff" />
+            </TouchableOpacity>
     </View>
 
     <View style={styles.cardDetails}>
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
   cardDetails: { padding: 10 },
   productType: { fontSize: 14, color: '#555', marginBottom: 2 },
   productTitle: { fontSize: 15, fontWeight: '600', marginBottom: 5, color: '#333' },
-  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#8a2be2' },
+  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#7a4f9e' },
   bottomNav: {
     height: 60,
     borderTopWidth: 1,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,28 +7,19 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  TextInput
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
+import { supabase } from '../supabaseClient'; // 🔹 Certifique-se de que o caminho está correto
 
 const screenWidth = Dimensions.get('window').width;
 
-// --- DADOS MOCKADOS PARA PRODUTOS ---
-const products = [
-  { id: 1, type: 'Colar', material: 'Ouro', title: 'Colar de Ouro Elegante', price: 309.9, image: 'https://cdn.awsli.com.br/600x450/940/940346/produto/198470554/colar-choker-fita-slim-8d612c0eb6.jpg' },
-  { id: 2, type: 'Colar', material: 'Ouro', title: 'Colar com Pingente', price: 820.9, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7b8qO9G1H8P9jgseoeCSRLfRj796LEFzSgg&s' },
-  { id: 3, type: 'Anel', material: 'Prata', title: 'Anel Cravejado', price: 540.9, image: 'https://cdn.iset.io/assets/40180/produtos/3624/anel-balaozinho-prata-cravejado-aparador-em-prata-925-an153-1-2.jpg' },
-  { id: 4, type: 'Anel', material: 'Ouro Branco', title: 'Anel com Turmalina', price: 1090.9, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHcZlJUe0vFNCs3NM_rg1Iu2Ka7SoTgAUbfQ&s' },
-  { id: 5, type: 'Brinco', material: 'Prata', title: 'Brinco Brilhante', price: 250.9, image: 'https://mirianteofilojoias.com.br/wp-content/uploads/2024/07/brinco-de-prata-base-dupla-cravejada-com-perola-pendurada-2.jpg' },
-  { id: 6, type: 'Brinco', material: 'Ouro', title: 'Brinco de rosas', price: 470.9, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrMGLOhAne0y5RMCQiMfjujTlodUr3F9Xpbw&s' },
-];
-
-// --- OPÇÕES DE FILTRO ---
 const filterOptions = {
-  tipos: ['Todos os tipos', 'Colar', 'Relogio', 'Anel', 'Brinco'],
+  tipos: ['Todos os tipos', 'Colar', 'Relogios', 'Anéis', 'Brincos'],
   materiais: ['Todos os materiais', 'Ouro', 'Prata', 'Ouro Branco'],
   precos: ['Todos os preços', 'Até R$500', 'R$500 a R$1.000', 'R$1.000 a R$1.500', 'Acima de R$1.500'],
 };
@@ -37,27 +28,29 @@ const filterOptions = {
 const ProductCard = ({ product, navigation }) => (
   <View style={styles.cardContainer}>
     <View style={styles.imageWrapper}>
-      <Image source={{ uri: product.image }} style={styles.productImage} />
+      <Image source={{ uri: product.foto_url }} style={styles.productImage} />
       <TouchableOpacity
         style={styles.favoriteIcon}
         onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
       >
         <Ionicons name="heart-outline" size={20} color="#aaa" />
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.plusIcon}
-        onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
-      >
-        <FontAwesome5 name="plus" size={14} color="#fff" />
-      </TouchableOpacity>
     </View>
     <View style={styles.cardDetails}>
-      <Text style={styles.productType}>{product.type} - {product.material}</Text>
-      <Text style={styles.productTitle}>{product.title}</Text>
-      <Text style={styles.productPrice}>R$ {product.price.toFixed(2)}</Text>
+      <Text style={[styles.productType, { color: '#7a4f9e' }]}>{product.material}</Text>
+      <Text style={styles.productTitle}>{product.nome}</Text>
+      <View style={styles.priceCartRow}>
+        <Text style={styles.productPrice}>R$ {Number(product.preco).toFixed(2)}</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
+        >
+          <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
+        </TouchableOpacity>
+      </View>
     </View>
   </View>
 );
+
 
 const Header = () => (
   <View style={styles.header}>
@@ -72,10 +65,8 @@ const Header = () => (
       </View>
     </View>
   </View>
-
 );
 
-// --- Bottom Navigation ---
 const BottomNav = ({ navigation }) => {
   const route = useRoute();
   const currentScreen = route.name;
@@ -130,29 +121,68 @@ export default function CatalogScreen({ navigation }) {
     precos: 'Todos os preços',
   });
 
-  const filteredProducts = products.filter(p => {
-    const matchTipo = selectedFilters.tipos === 'Todos os tipos' || p.type === selectedFilters.tipos;
-    const matchMaterial = selectedFilters.materiais === 'Todos os materiais' || p.material === selectedFilters.materiais;
-    const price = p.price;
-    let matchPreco = true;
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
-    switch (selectedFilters.precos) {
-      case 'Até R$500':
-        matchPreco = price <= 500;
-        break;
-      case 'R$500 a R$1.000':
-        matchPreco = price > 500 && price <= 1000;
-        break;
-      case 'R$1.000 a R$1.500':
-        matchPreco = price > 1000 && price <= 1500;
-        break;
-      case 'Acima de R$1.500':
-        matchPreco = price > 1500;
-        break;
-    }
+  // 1. 🚀 FUNÇÃO fetchProducts ATUALIZADA para aplicar os filtros no Supabase
+  const fetchProducts = async (filters, search = '') => {
+  setLoading(true);
+  
+  let query = supabase.from('produtos').select('*');
 
-    return matchTipo && matchMaterial && matchPreco;
-  });
+  // 🔹 Busca por nome (sem distinguir maiúsculas/minúsculas)
+  if (search.trim() !== '') {
+    query = query.ilike('nome', `%${search}%`);
+  }
+
+  // 🔹 Filtro de tipo
+  if (filters.tipos !== 'Todos os tipos') {
+    query = query.eq('tipo', filters.tipos);
+  }
+
+  // 🔹 Filtro de material
+  if (filters.materiais !== 'Todos os materiais') {
+    query = query.eq('material', filters.materiais);
+  }
+
+  // 🔹 Filtro de preço (usando ranges numéricos)
+  switch (filters.precos) {
+    case 'Até R$500':
+      query = query.lte('preco', 500);
+      break;
+    case 'R$500 a R$1.000':
+      query = query.gt('preco', 500).lte('preco', 1000);
+      break;
+    case 'R$1.000 a R$1.500':
+      query = query.gt('preco', 1000).lte('preco', 1500);
+      break;
+    case 'Acima de R$1.500':
+      query = query.gt('preco', 1500);
+      break;
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Erro ao buscar produtos:', error);
+    setProducts([]);
+  } else {
+    setProducts(data);
+  }
+
+  setLoading(false);
+};
+
+
+  // 2. 🔄 Atualiza automaticamente ao mudar busca ou filtro
+  useEffect(() => {
+  const delay = setTimeout(() => {
+    fetchProducts(selectedFilters, search);
+  }, 400); // pequeno atraso para evitar consultas repetidas
+  return () => clearTimeout(delay);
+}, [search, selectedFilters]);
+
 
   const renderDropdown = (key) => (
     <View style={styles.dropdownMenu}>
@@ -171,6 +201,8 @@ export default function CatalogScreen({ navigation }) {
     </View>
   );
 
+  const filteredProducts = products;
+
   const renderFilterItem = (key, placeholder) => (
     <View style={[styles.filterItemWrapper, { zIndex: key === 'tipos' ? 30 : key === 'materiais' ? 20 : 10 }]}>
       <TouchableOpacity
@@ -187,10 +219,8 @@ export default function CatalogScreen({ navigation }) {
   return (
     <View style={styles.screenContainer}>
       <Header />
-      <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={20} color="#999" style={styles.searchIcon} />
-        <TextInput style={styles.searchInput} placeholder="Buscar" placeholderTextColor="#999" />
-      </View>
+
+
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.filtersBox}>
           <View style={styles.filtersHeader}>
@@ -201,16 +231,21 @@ export default function CatalogScreen({ navigation }) {
           {renderFilterItem('materiais', 'Todos os materiais')}
           {renderFilterItem('precos', 'Todos os preços')}
         </View>
-        <View style={styles.productsGrid}>
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map(p => <ProductCard key={p.id} product={p} navigation={navigation} />)
-          ) : (
-            <Text style={{ textAlign: 'center', marginTop: 20 }}>Nenhum produto encontrado.</Text>
-          )}
-        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#7a4f9e" style={{ marginTop: 40 }} />
+        ) : (
+          <View style={styles.productsGrid}>
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map(p => <ProductCard key={p.id} product={p} navigation={navigation} />)
+            ) : (
+              <Text style={{ textAlign: 'center', marginTop: 20 }}>Nenhum produto encontrado.</Text>
+            )}
+          </View>
+        )}
+
         <View style={{ height: 50 }} />
       </ScrollView>
-      {/* 👇 Navbar atualizada */}
       <BottomNav navigation={navigation} />
     </View>
   );
@@ -219,6 +254,12 @@ export default function CatalogScreen({ navigation }) {
 // --- ESTILOS ---
 const styles = StyleSheet.create({
   screenContainer: { flex: 1, backgroundColor: '#fff', overflow: 'visible' },
+  priceCartRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginTop: 5,
+},
   scrollViewContent: { paddingBottom: 80 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10, paddingTop: 45, backgroundColor: '#fff' },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
@@ -247,7 +288,7 @@ const styles = StyleSheet.create({
   cardDetails: { padding: 10, minHeight: 80 },
   productType: { fontSize: 13, color: '#666', marginBottom: 2 },
   productTitle: { fontSize: 14, fontWeight: '600', marginBottom: 5, color: '#333' },
-  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#8a2be2' },
+  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#7a4f9e' },
   bottomNav: { height: 60, borderTopWidth: 1, borderTopColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5, position: "absolute", bottom: 0, width: "100%" },
   navItem: { flex: 1, alignItems: "center" },
 });
