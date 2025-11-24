@@ -1,79 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
-import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  ActivityIndicator
+} from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
 const screenWidth = Dimensions.get('window').width;
 
-const ProductCard = ({ product, user, navigation }) => (
-  <View style={styles.cardContainer}>
-    <View style={styles.imageWrapper}>
-      <Image source={{ uri: product.foto_url }} style={styles.productImage} />
+// CARD DO PRODUTO
+const ProductCard = ({ product, navigation }) => {
+  const formattedProduct = {
+    id: product.id,
+    type: product.material,
+    name: product.nome,
+    price: `R$ ${Number(product.preco).toFixed(2).replace('.', ',')}`,
+    image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
+  };
 
-      {/* Ícone de Favorito */}
-      <TouchableOpacity
-        style={styles.favoriteIcon}
-        onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
-      >
-        <Ionicons name="heart-outline" size={20} color="#aaa" />
-      </TouchableOpacity>
+  return (
+    <View style={styles.cardContainer}>
+      <View style={styles.imageWrapper}>
+        <Image
+          source={{ uri: formattedProduct.image }}
+          style={styles.productImage}
+        />
 
-      {/* 🛒 Ícone de Adicionar ao Carrinho ATUALIZADO */}
-      <TouchableOpacity
-        style={styles.plusIcon}
-        onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
-      >
-        {/* Substituí FontAwesome5 name="plus" por Ionicons name="cart-outline" */}
-        <Ionicons name="cart-outline" size={18} color="#fff" />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.favoriteIcon}
+          onPress={() => navigation.navigate("PaginaFavoritos", { produto: formattedProduct })}
+        >
+          <Ionicons name="heart-outline" size={20} color="#aaa" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.cardDetails}>
+        <Text style={[styles.productType, { color: '#7a4f9e' }]}>
+          {formattedProduct.type}
+        </Text>
+
+        <Text style={styles.productTitle}>{formattedProduct.name}</Text>
+
+        <View style={styles.priceCartRow}>
+          <Text style={styles.productPrice}>{formattedProduct.price}</Text>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
+          >
+            <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
+  );
+};
 
-    <View style={styles.cardDetails}>
-      <Text style={styles.productType}>{product.material}</Text>
-      <Text style={styles.productTitle}>{product.nome}</Text>
-      <Text style={styles.productPrice}>R$ {parseFloat(product.preco).toFixed(2).replace('.', ',')}</Text>
-    </View>
-  </View>
-);
-
+// PÁGINA PRINCIPAL (ANÉIS)
 export default function PaginaAneis({ navigation }) {
-  const [user, setUser] = useState(null);
   const [aneis, setAneis] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Busca produtos do tipo "aneis" no Supabase
   const fetchAneis = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('produtos')
-      .select('id, nome, preco, material, tipo, foto_url')
-      .ilike('tipo', '%Ané%')
-      .order('id', { ascending: false });
+      .select("id, nome, preco, material, tipo, foto_url")
+      .ilike("tipo", "%Ané%");
 
-    if (error) {
-      console.error('Erro ao buscar anéis:', error);
-    } else {
-      setAneis(data);
-    }
+    if (error) console.error("Erro ao carregar anéis:", error);
+    else setAneis(data);
+
     setLoading(false);
   };
 
   useEffect(() => {
-    const getUserAndProducts = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      await fetchAneis();
-    };
-    getUserAndProducts();
+    fetchAneis();
   }, []);
 
   return (
     <View style={styles.screenContainer}>
-      {/* Header */}
+      
+      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image
-            source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+            source={{ uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L" }}
             style={styles.logoImage}
           />
           <View>
@@ -83,78 +100,152 @@ export default function PaginaAneis({ navigation }) {
         </View>
       </View>
 
+      {/* ⭐️ NAVEGAÇÃO ENTRE CATEGORIAS (MESMA DA PÁGINA DE BRINCOS) */}
+      <View style={styles.categoryNav}>
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaBrincos")}>
+          <Text style={styles.categoryButton}>Brincos</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaColares")}>
+          <Text style={styles.categoryButton}>Colares</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaAneis")}>
+          <Text style={[styles.categoryButton, styles.categoryActive]}>Anéis</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaRelogios")}>
+          <Text style={styles.categoryButton}>Relógios</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* CONTEÚDO */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <Text style={styles.sectionTitle}>Anéis</Text>
 
         {loading ? (
           <ActivityIndicator size="large" color="#7a4f9e" style={{ marginTop: 50 }} />
         ) : aneis.length === 0 ? (
-          <Text style={{ textAlign: 'center', marginTop: 30, color: '#555' }}>
+          <Text style={{ textAlign: "center", marginTop: 60, color: "#777" }}>
             Nenhum anel encontrado.
           </Text>
         ) : (
           <View style={styles.productsGrid}>
-            {aneis.map((product) => (
-              <ProductCard key={product.id} product={product} user={user} navigation={navigation} />
+            {aneis.map(prod => (
+              <ProductCard key={prod.id} product={prod} navigation={navigation} />
             ))}
           </View>
         )}
       </ScrollView>
 
-      {/* Bottom Navigation */}
+      {/* BOTTOM NAV */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaInicial")}>
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
           <MaterialCommunityIcons name="home" size={28} color="#7a4f9e" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFiltros")}>
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaFiltros")}>
           <Ionicons name="search-outline" size={28} color="#7a4f9e" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFavoritos")}>
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaFavoritos")}>
           <Ionicons name="heart-outline" size={28} color="#7a4f9e" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaCarrinho")}>
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaCarrinho")}>
           <Ionicons name="cart-outline" size={28} color="#7a4f9e" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaPerfil")}>
           <Ionicons name="person-outline" size={28} color="#7a4f9e" />
         </TouchableOpacity>
       </View>
+
     </View>
   );
 }
 
-// --- Estilos ---
+// ESTILOS — IGUAIS AOS DA PÁGINA DE BRINCOS
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: '#fff' },
+  screenContainer: { flex: 1, backgroundColor: "#fff" },
   scrollViewContent: { paddingHorizontal: 15, paddingBottom: 20 },
+
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 15,
-    paddingVertical: 10,
     paddingTop: 45,
-    backgroundColor: '#fff',
+    paddingBottom: 10,
+    backgroundColor: "#fff",
   },
-  logoContainer: { flexDirection: 'row', alignItems: 'center' },
-  logoImage: { width: 35, height: 35, borderRadius: 5, marginRight: 10, backgroundColor: '#7a4f9e' },
-  logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
-  logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginVertical: 15 },
-  productsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginHorizontal: -5 },
-  cardContainer: { width: screenWidth / 2 - 20, marginBottom: 15, marginHorizontal: 5, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' },
-  imageWrapper: { position: 'relative', width: '100%', height: 150 },
-  productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  favoriteIcon: { position: "absolute", top: 10, right: 10, backgroundColor: "#fff", borderRadius: 15, padding: 5 },
-  plusIcon: { position: "absolute", bottom: 10, right: 10, backgroundColor: "#7a4f9e", borderRadius: 12, padding: 6 },
+
+  logoContainer: { flexDirection: "row", alignItems: "center" },
+  logoImage: { width: 35, height: 35, marginRight: 10, borderRadius: 6 },
+  logoText: { fontSize: 18, fontWeight: "bold", color: "#333" },
+  logoSubtitle: { fontSize: 12, color: "#555", marginTop: -3 },
+
+  /* ⭐️ MENU DAS CATEGORIAS */
+  categoryNav: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    backgroundColor: "#fafafa",
+  },
+
+  categoryButton: {
+    fontSize: 15,
+    color: "#555",
+    fontWeight: "500",
+  },
+
+  categoryActive: {
+    color: "#7a4f9e",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+  },
+
+  sectionTitle: { fontSize: 20, fontWeight: "bold", color: "#333", marginVertical: 15 },
+
+  productsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  cardContainer: {
+    width: screenWidth / 2 - 20,
+    marginBottom: 15,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+
+  imageWrapper: { width: "100%", height: 150, backgroundColor: "#eee" },
+  productImage: { width: "100%", height: "100%" },
+
+  favoriteIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#fff",
+    padding: 5,
+    borderRadius: 20,
+  },
+
   cardDetails: { padding: 10 },
-  productType: { fontSize: 14, color: '#555', marginBottom: 2 },
-  productTitle: { fontSize: 15, fontWeight: '600', marginBottom: 5, color: '#333' },
-  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#7a4f9e' },
-  bottomNav: { height: 60, borderTopWidth: 1, borderTopColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5 },
-  navItem: { flex: 1, alignItems: "center" },
+  productType: { fontSize: 14, color: "#7a4f9e" },
+  productTitle: { fontSize: 15, fontWeight: "600", marginVertical: 3 },
+  productPrice: { fontSize: 16, fontWeight: "bold", color: "#7a4f9e" },
+
+  bottomNav: {
+    height: 60,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    backgroundColor: "#fff",
+  }
 });

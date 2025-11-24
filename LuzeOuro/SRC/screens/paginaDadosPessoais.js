@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,35 +8,143 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
-} from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+  Alert,
+} from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { supabase } from "../supabaseClient";
+import { useNavigation } from "@react-navigation/native";
 
 const COLORS = {
-  primary: '#7a4f9e',
-  secondary: '#333',
-  background: '#FFFFFF',
-  lightGray: '#F5F5F5',
-  border: '#E0E0E0',
+  primary: "#7a4f9e",
+  secondary: "#333",
+  background: "#FFFFFF",
+  lightGray: "#F5F5F5",
+  border: "#E0E0E0",
 };
 
-const PerfilUsuario = () => {
+const DadosPessoais = () => {
   const navigation = useNavigation();
-  const [nome, setNome] = useState('Júlia Fortunato');
-  const [email, setEmail] = useState('juliafortunato24@gmail.com');
-  const [senha, setSenha] = useState('**********');
 
-  const handleConfirmar = () => {
-    alert('Dados confirmados!');
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+
+  const [iniciais, setIniciais] = useState("?");
+
+  // ---------------------------
+  // 🔥 CARREGAR DADOS DO USUÁRIO
+  // ---------------------------
+  const carregarDados = async () => {
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+
+      if (authError || !authData?.user) {
+        Alert.alert("Erro", "Não foi possível carregar os dados do usuário.");
+        return;
+      }
+
+      const user = authData.user;
+      setUserId(user.id);
+
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        Alert.alert("Erro ao carregar perfil", error.message);
+        return;
+      }
+
+      setNome(profile.full_name || "");
+      setEmail(profile.email || "");
+
+      const ini = profile.full_name
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase();
+
+      setIniciais(ini || "?");
+    } catch (err) {
+      Alert.alert("Erro", err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
+  // ---------------------------
+  // 🔥 SALVAR ALTERAÇÕES
+  // ---------------------------
+  const handleSalvar = async () => {
+    if (!userId) return;
+
+    setLoading(true);
+
+    try {
+      // Atualizar nome e email no Supabase
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          full_name: nome,
+          email: email,
+          updated_at: new Date(),
+        })
+        .eq("id", userId);
+
+      if (updateError) {
+        Alert.alert("Erro ao salvar", updateError.message);
+        return;
+      }
+
+      // Atualizar senha (opcional)
+      if (senhaAtual && novaSenha) {
+        const { error: pwdError } = await supabase.auth.updateUser({
+          password: novaSenha,
+        });
+
+        if (pwdError) {
+          Alert.alert("Erro ao alterar senha", pwdError.message);
+          return;
+        }
+      }
+
+      Alert.alert("Sucesso", "Alterações salvas com sucesso!");
+
+    } catch (err) {
+      Alert.alert("Erro", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingBox}>
+        <Text>Carregando...</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER (igual ao da Página de Carrinho) */}
+      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image
-            source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+            source={{
+              uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L",
+            }}
             style={styles.logoImage}
           />
           <View>
@@ -46,21 +154,23 @@ const PerfilUsuario = () => {
         </View>
       </View>
 
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Card de edição de perfil */}
         <View style={styles.card}>
+
+          {/* AVATAR */}
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>JF</Text>
+            <Text style={styles.avatarText}>{iniciais}</Text>
           </View>
 
+          {/* Nome */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Nome:</Text>
+            <Text style={styles.label}>Nome completo:</Text>
             <TextInput style={styles.input} value={nome} onChangeText={setNome} />
           </View>
 
+          {/* Email */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Email:</Text>
+            <Text style={styles.label}>E-mail:</Text>
             <TextInput
               style={styles.input}
               value={email}
@@ -69,41 +179,54 @@ const PerfilUsuario = () => {
             />
           </View>
 
+          {/* Senha atual */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Senha:</Text>
+            <Text style={styles.label}>Senha atual:</Text>
             <TextInput
               style={styles.input}
-              value={senha}
-              onChangeText={setSenha}
-              secureTextEntry={true}
+              secureTextEntry
+              value={senhaAtual}
+              onChangeText={setSenhaAtual}
             />
           </View>
 
-          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmar}>
-            <Text style={styles.confirmButtonText}>Confirmar</Text>
+          {/* Nova senha */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Nova senha:</Text>
+            <TextInput
+              style={styles.input}
+              secureTextEntry
+              value={novaSenha}
+              onChangeText={setNovaSenha}
+            />
+          </View>
+
+          {/* BOTÃO SALVAR */}
+          <TouchableOpacity style={styles.confirmButton} onPress={handleSalvar}>
+            <Text style={styles.confirmButtonText}>Salvar Alterações</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation (igual à da Página de Brincos) */}
+      {/* BOTTOM NAV */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaInicial')}>
-          <MaterialCommunityIcons name="home-outline" size={28} color={COLORS.secondary} />
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
+          <MaterialCommunityIcons name="home-outline" size={28} color="#aaa" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaFiltros')}>
-          <Ionicons name="search-outline" size={28} color={COLORS.secondary} />
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaFiltros")}>
+          <Ionicons name="search-outline" size={28} color="#aaa" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaFavoritos')}>
-          <Ionicons name="heart-outline" size={28} color={COLORS.secondary} />
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaFavoritos")}>
+          <Ionicons name="heart-outline" size={28} color="#aaa" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaCarrinho')}>
-          <Ionicons name="cart-outline" size={28} color={COLORS.secondary} />
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaCarrinho")}>
+          <Ionicons name="cart-outline" size={28} color="#aaa" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PaginaPerfil')}>
+        <TouchableOpacity>
           <Ionicons name="person" size={28} color={COLORS.primary} />
         </TouchableOpacity>
       </View>
@@ -113,97 +236,73 @@ const PerfilUsuario = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  scrollContent: {
-    paddingHorizontal: 15,
-    paddingTop: 10,
-    paddingBottom: 80,
-    alignItems: 'center',
-  },
+  loadingBox: { flex: 1, justifyContent: "center", alignItems: "center" },
+  scrollContent: { paddingHorizontal: 15, paddingBottom: 80, alignItems: "center" },
 
-  // HEADER igual ao da Página de Carrinho
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingVertical: 15,
     paddingTop: 45,
     backgroundColor: COLORS.background,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
-  logoContainer: { flexDirection: 'row', alignItems: 'center' },
-  logoImage: {
-    width: 35,
-    height: 35,
-    borderRadius: 5,
-    marginRight: 10,
-    backgroundColor: COLORS.primary,
-  },
-  logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
-  logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
 
-  // CARD DE PERFIL
+  logoContainer: { flexDirection: "row", alignItems: "center" },
+  logoImage: {
+    width: 35, height: 35, borderRadius: 5,
+    marginRight: 10, backgroundColor: COLORS.primary,
+  },
+  logoText: { fontSize: 18, fontWeight: "bold", color: "#333" },
+  logoSubtitle: { fontSize: 12, color: "#666" },
+
   card: {
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
     backgroundColor: COLORS.lightGray,
     borderRadius: 15,
     padding: 20,
-    alignItems: 'center',
     marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    alignItems: "center",
   },
+
   avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 95, height: 95, borderRadius: 50,
     backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 30,
+    justifyContent: "center", alignItems: "center",
+    marginBottom: 25,
   },
-  avatarText: { fontSize: 30, fontWeight: 'bold', color: '#fff' },
-  formGroup: { width: '100%', marginBottom: 15 },
-  label: { fontSize: 14, color: '#333', marginBottom: 5 },
+  avatarText: { fontSize: 32, color: "#fff", fontWeight: "bold" },
+
+  formGroup: { width: "100%", marginBottom: 15 },
+  label: { fontSize: 14, color: "#333", marginBottom: 5 },
+
   input: {
-    backgroundColor: '#e6e6e6',
-    borderRadius: 5,
-    padding: 10,
+    backgroundColor: "#ededed",
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
-    color: '#333',
-    borderColor: '#ccc',
     borderWidth: 1,
+    borderColor: COLORS.border,
   },
+
   confirmButton: {
     backgroundColor: COLORS.primary,
     borderRadius: 10,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 40,
     marginTop: 20,
   },
-  confirmButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-
-  // BOTTOM NAV (igual à página de brincos)
-  bottomNav: {
-    height: 60,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingBottom: 5,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  confirmButtonText: {
+    color: "#fff", fontSize: 16, fontWeight: "bold",
   },
-  navItem: { flex: 1, alignItems: 'center' },
+
+  bottomNav: {
+    height: 60, borderTopWidth: 1,
+    borderColor: "#ddd", flexDirection: "row",
+    justifyContent: "space-around", alignItems: "center",
+    backgroundColor: "#fff",
+  },
 });
 
-export default PerfilUsuario;
+export default DadosPessoais;

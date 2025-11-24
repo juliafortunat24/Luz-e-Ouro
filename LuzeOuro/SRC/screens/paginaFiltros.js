@@ -25,31 +25,59 @@ const filterOptions = {
 };
 
 // --- COMPONENTES ---
-const ProductCard = ({ product, navigation }) => (
-  <View style={styles.cardContainer}>
-    <View style={styles.imageWrapper}>
-      <Image source={{ uri: product.foto_url }} style={styles.productImage} />
-      <TouchableOpacity
-        style={styles.favoriteIcon}
-        onPress={() => navigation.navigate("PaginaFavoritos", { produto: product })}
-      >
-        <Ionicons name="heart-outline" size={20} color="#aaa" />
-      </TouchableOpacity>
-    </View>
-    <View style={styles.cardDetails}>
-      <Text style={[styles.productType, { color: '#7a4f9e' }]}>{product.material}</Text>
-      <Text style={styles.productTitle}>{product.nome}</Text>
-      <View style={styles.priceCartRow}>
-        <Text style={styles.productPrice}>R$ {Number(product.preco).toFixed(2)}</Text>
+// ... (código anterior)
+
+const ProductCard = ({ product, navigation }) => {
+  // ⭐️ FORMATANDO O OBJETO DO PRODUTO AQUI
+  const formattedProduct = {
+    id: product.id,
+    type: product.material, // Corresponde ao 'type' da Pagina Inicial
+    name: product.nome,     // Corresponde ao 'name' da Pagina Inicial
+    price: `R$ ${Number(product.preco).toFixed(2).replace('.', ',')}`, // Formata o preço
+    image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
+  };
+
+  return (
+    <View style={styles.cardContainer}>
+      <View style={styles.imageWrapper}>
+        <Image
+          source={{ uri: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem" }}
+          style={styles.productImage}
+        />
+
         <TouchableOpacity
-          onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
+          style={styles.favoriteIcon}
+          onPress={() => navigation.navigate("PaginaFavoritos", { produto: formattedProduct })}
         >
-          <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
+          <Ionicons name="heart-outline" size={20} color="#aaa" />
         </TouchableOpacity>
       </View>
+
+      <View style={styles.cardDetails}>
+        <Text style={[styles.productType, { color: '#7a4f9e' }]}>
+          {product.material}
+        </Text>
+
+        <Text style={styles.productTitle}>{product.nome}</Text>
+
+        <View style={styles.priceCartRow}>
+          <Text style={styles.productPrice}>
+            R$ {Number(product.preco).toFixed(2).replace('.', ',')}
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
+          >
+            <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
-  </View>
-);
+  );
+};
+
+// ... (restante do código)
+
 
 
 const Header = () => (

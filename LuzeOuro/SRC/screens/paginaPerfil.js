@@ -9,84 +9,90 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { supabase } from "../supabaseClient";
 
-// IMPORT DO SUPABASE (use o seu cliente real)
-import { supabase } from '../supabaseClient';
-// OBS: Certifique-se que o caminho para o seu supabaseClient está correto.
-
-// --- DADOS MOCKADOS (Substitua pelos dados reais do usuário do Supabase) ---
-const mockUser = {
-  initials: "JF",
-  name: "Júlia Fortunato",
-  email: "juliafortunato@gmail.com",
-  memberSince: "janeiro de 2025",
-  totalOrders: 12,
-  totalFavorites: 3,
-  recentOrders: [
-    { id: "#01", date: "15/02/2025", value: "R$ 300,00", status: "Entregue" },
-    { id: "#02", date: "22/06/2025", value: "R$ 550,00", status: "Entregue" },
-  ],
-};
-
-// Componente para o Box de Estatísticas (Pedidos e Favoritos)
-const StatBox = ({ count, label, iconName }) => (
-  <View style={styles.statBox}>
-    <Text style={styles.statCount}>{count}</Text>
-    <Text style={styles.statLabel}>{label}</Text>
-  </View>
-);
-
-// Componente para os Itens de Navegação Inferiores (Dados Pessoais, Sair)
-const NavItem = ({ icon, text, onPress }) => (
-  <TouchableOpacity style={styles.navItem} onPress={onPress}>
-    <Ionicons name={icon} size={24} color="#555" style={{ width: 30 }} />
-    <Text style={styles.navItemText}>{text}</Text>
-    <Ionicons name="chevron-forward" size={20} color="#ccc" />
-  </TouchableOpacity>
-);
 
 export default function PaginaPerfil({ navigation }) {
-  const [userProfile, setUserProfile] = useState(mockUser);
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Função para fazer o Log out
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
+  // Buscar os dados reais do usuário no Supabase
+  const fetchUserData = async () => {
+    try {
+      // 1. Pegando o usuário logado
+      const { data: authData, error: authError } = await supabase.auth.getUser();
 
-    if (error) {
-      Alert.alert("Erro ao sair", error.message);
-    } else {
-      // Redireciona para a tela de login (ajuste o nome da tela se for diferente)
-      navigation.replace('PaginaLogin');
+      if (authError || !authData?.user) {
+        Alert.alert("Erro", "Usuário não encontrado.");
+        return;
+      }
+
+      const user = authData.user;
+
+      // 2. Buscar dados na tabela 'profiles'
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        Alert.alert("Erro ao carregar perfil", error.message);
+        return;
+      }
+
+      // Gerar iniciais automaticamente
+      const initials = data.full_name
+        ? data.full_name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+        : "?";
+
+      setUserProfile({
+        name: data.full_name,
+        email: data.email,
+        initials: initials,
+        memberSince: new Date(data.created_at).toLocaleDateString("pt-BR", {
+          month: "long",
+          year: "numeric",
+        }),
+        totalOrders: 0,
+        totalFavorites: 0,
+      });
+
+    } catch (err) {
+      Alert.alert("Erro inesperado", err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Aqui você buscará os dados do usuário real do Supabase
   useEffect(() => {
-    // 1. Obter o usuário logado
-    const fetchUserProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (user) {
-        // Exemplo de como você pode integrar os dados do Supabase
-        // Normalmente, você faria um SELECT na sua tabela de 'profiles' aqui
-        setUserProfile({
-          ...mockUser, // Mantém dados mockados temporariamente
-          email: user.email,
-          // Se você tiver um nome de usuário, busque e use aqui
-        });
-      }
-    };
-    fetchUserProfile();
+    fetchUserData();
   }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigation.replace("PaginaLogin");
+  };
+
+  if (loading || !userProfile) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Carregando...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* Header (Topo) */}
-      {/* Header (igual ao da Página de Filtros) */}
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image
-            source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+            source={{ uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L" }}
             style={styles.logoImage}
           />
           <View>
@@ -96,17 +102,13 @@ export default function PaginaPerfil({ navigation }) {
         </View>
       </View>
 
-
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Card Principal do Usuário */}
+        {/* Card do Usuário */}
         <View style={styles.profileCard}>
-          {/* Avatar com as Iniciais */}
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarText}>{userProfile.initials}</Text>
           </View>
 
-          {/* Informações */}
           <View style={styles.infoContainer}>
             <Text style={styles.userName}>{userProfile.name}</Text>
             <Text style={styles.userEmail}>{userProfile.email}</Text>
@@ -115,89 +117,76 @@ export default function PaginaPerfil({ navigation }) {
             </Text>
           </View>
 
-          {/* Estatísticas (Pedidos e Favoritos) */}
           <View style={styles.statsRow}>
-            <StatBox
-              count={userProfile.totalOrders}
-              label="Pedidos"
-              iconName="basket-outline"
-            />
-            <StatBox
-              count={userProfile.totalFavorites}
-              label="Favoritos"
-              iconName="heart-outline"
-            />
+            <View style={styles.statBox}>
+              <Text style={styles.statCount}>{userProfile.totalOrders}</Text>
+              <Text style={styles.statLabel}>Pedidos</Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Text style={styles.statCount}>{userProfile.totalFavorites}</Text>
+              <Text style={styles.statLabel}>Favoritos</Text>
+            </View>
           </View>
         </View>
 
-        {/* Botoes de Acesso Rápido (Pedidos e Favoritos) */}
+        {/* Botões de ações */}
         <View style={styles.quickAccessRow}>
           <TouchableOpacity
             style={styles.quickAccessButton}
-            onPress={() => navigation.navigate("PaginaCarrinho")} // Ajuste a navegação
+            onPress={() => navigation.navigate("PaginaInicial")}
           >
             <Ionicons name="gift-outline" size={24} color="#7a4f9e" />
-            <Text style={styles.quickAccessText}>Pedidos</Text>
+            <Text style={styles.quickAccessText}>Comprar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.quickAccessButton}
-            onPress={() => navigation.navigate("PaginaFavoritos")} // Ajuste a navegação
+            onPress={() => navigation.navigate("PaginaFavoritos")}
           >
             <Ionicons name="heart-outline" size={24} color="#7a4f9e" />
             <Text style={styles.quickAccessText}>Favoritos</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Pedidos Recentes */}
-        <View style={styles.recentOrdersCard}>
-          <Text style={styles.recentOrdersTitle}>Pedidos recentes</Text>
-
-          {userProfile.recentOrders.map((order) => (
-            <View key={order.id} style={styles.orderItem}>
-              <View>
-                <Text style={styles.orderId}>Pedido {order.id}</Text>
-                <Text style={styles.orderDate}>{order.date}</Text>
-              </View>
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.orderValue}>{order.value}</Text>
-                <Text style={styles.orderStatus}>{order.status}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        {/* Itens de Navegação (Dados Pessoais e Sair) */}
+        {/* Navegação inferior */}
         <View style={styles.navSection}>
-          <NavItem
-            icon="person-outline"
-            text="Dados Pessoais"
-            onPress={() => navigation.navigate("DadosPessoais")} // Ajuste a navegação
-          />
-          <NavItem
-            icon="log-out-outline"
-            text="Sair da Conta"
-            onPress={handleSignOut}
-          />
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => navigation.navigate("DadosPessoais")}
+          >
+            <Ionicons name="person-outline" size={24} color="#555" />
+            <Text style={styles.navItemText}>Dados Pessoais</Text>
+            <Ionicons name="chevron-forward" size={20} color="#ccc" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.navItem} onPress={handleSignOut}>
+            <Ionicons name="log-out-outline" size={24} color="#555" />
+            <Text style={styles.navItemText}>Sair da Conta</Text>
+            <Ionicons name="chevron-forward" size={20} color="#ccc" />
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Navegação Inferior (Mantida do seu componente anterior) */}
+      {/* Navegação Bottom */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaInicial")}>
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
           <MaterialCommunityIcons name="home-outline" size={28} color="#aaa" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaFiltros")}>
+
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaFiltros")}>
           <Ionicons name="search-outline" size={28} color="#aaa" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaFavoritos")}>
+
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaFavoritos")}>
           <Ionicons name="heart-outline" size={28} color="#aaa" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaCarrinho")}>
+
+        <TouchableOpacity onPress={() => navigation.navigate("PaginaCarrinho")}>
           <Ionicons name="cart-outline" size={28} color="#aaa" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItemBottom} onPress={() => navigation.navigate("PaginaPerfil")}>
-          {/* Ícone de perfil ATIVO */}
+
+        <TouchableOpacity>
           <Ionicons name="person" size={28} color="#7a4f9e" />
         </TouchableOpacity>
       </View>
@@ -205,57 +194,28 @@ export default function PaginaPerfil({ navigation }) {
   );
 }
 
-// --- ESTILOS ---
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1, backgroundColor: "#fff" },
+  scrollContent: { paddingBottom: 20 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    paddingVertical: 15,
+    paddingTop: 45,
     backgroundColor: "#fff",
   },
-  scrollContent: {
-    paddingBottom: 20, // Espaçamento extra no final do ScrollView
-  },
-  // Estilos do Header (Replicados do seu componente anterior)
-
-  logoBox: {
-    backgroundColor: "#7a4f9e",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    paddingTop: 45, // mesmo espaçamento da página de filtros
-    backgroundColor: '#fff',
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  logoContainer: { flexDirection: "row", alignItems: "center" },
   logoImage: {
     width: 35,
     height: 35,
     borderRadius: 5,
     marginRight: 10,
-    backgroundColor: '#7a4f9e',
+    backgroundColor: "#7a4f9e",
   },
-  logoText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  logoSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: -3,
-  },
+  logoText: { fontSize: 18, fontWeight: "bold", color: "#333" },
+  logoSubtitle: { fontSize: 12, color: "#666", marginTop: -3 },
 
-
-  // Estilos do Card Principal
   profileCard: {
     backgroundColor: "#f5f5f5",
     margin: 15,
@@ -272,53 +232,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 15,
   },
-  avatarText: {
-    color: "#fff",
-    fontSize: 32,
-    fontWeight: "bold",
-  },
-  infoContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
-  },
-  userEmail: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 2,
-  },
-  userSince: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 4,
-  },
+  avatarText: { color: "#fff", fontSize: 32, fontWeight: "bold" },
+  infoContainer: { alignItems: "center", marginBottom: 20 },
+  userName: { fontSize: 18, fontWeight: "700", color: "#333" },
+  userEmail: { fontSize: 14, color: "#666", marginTop: 2 },
+  userSince: { fontSize: 12, color: "#999", marginTop: 4 },
+
   statsRow: {
     flexDirection: "row",
-    width: "100%",
     justifyContent: "space-around",
+    width: "100%",
     borderTopWidth: 1,
-    borderTopColor: "#eee",
+    borderTopColor: "#ddd",
     paddingTop: 15,
   },
-  statBox: {
-    alignItems: "center",
-  },
-  statCount: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#7a4f9e",
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 5,
-  },
+  statBox: { alignItems: "center" },
+  statCount: { fontSize: 22, fontWeight: "bold", color: "#7a4f9e" },
+  statLabel: { fontSize: 14, color: "#666" },
 
-  // Estilos da Fileira de Acesso Rápido
   quickAccessRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -326,14 +257,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   quickAccessButton: {
-    flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: "#f5f5f5",
-    borderRadius: 8,
     padding: 15,
-    marginHorizontal: 5,
+    borderRadius: 8,
     alignItems: "center",
-    justifyContent: 'center',
+    justifyContent: "center",
+    flex: 1,
+    marginHorizontal: 5,
   },
   quickAccessText: {
     marginLeft: 10,
@@ -342,93 +273,30 @@ const styles = StyleSheet.create({
     color: "#7a4f9e",
   },
 
-  // Estilos dos Pedidos Recentes
-  recentOrdersCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 15,
-    marginBottom: 15,
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2, // Sombra para Android
-  },
-  recentOrdersTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    paddingBottom: 10,
-  },
-  orderItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  orderId: {
-    fontWeight: "600",
-    color: "#333",
-    fontSize: 15,
-  },
-  orderDate: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 2,
-  },
-  orderValue: {
-    fontWeight: "700",
-    color: "#7a4f9e",
-    fontSize: 16,
-  },
-  orderStatus: {
-    fontSize: 12,
-    color: "green", // Cor verde para "Entregue"
-    marginTop: 2,
-  },
-
-  // Estilos da Seção de Navegação (Dados Pessoais e Sair)
   navSection: {
     marginHorizontal: 15,
     backgroundColor: "#fff",
     borderRadius: 12,
-    overflow: 'hidden', // Para que a borda seja aplicada corretamente
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: "#eee",
   },
   navItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    padding: 15,
     justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderColor: "#eee",
   },
-  navItemText: {
-    flex: 1,
-    marginLeft: 15,
-    fontSize: 16,
-    color: "#333",
-  },
+  navItemText: { flex: 1, marginLeft: 15, fontSize: 16, color: "#333" },
 
-  // Estilos da Navegação Inferior (Replicados do seu componente anterior)
   bottomNav: {
     height: 60,
     borderTopWidth: 1,
-    borderTopColor: "#ddd",
-    backgroundColor: "#fff",
+    borderColor: "#ddd",
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    paddingBottom: 5,
-  },
-  navItemBottom: {
-    flex: 1,
-    alignItems: "center",
+    backgroundColor: "#fff",
   },
 });
