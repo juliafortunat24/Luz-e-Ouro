@@ -94,13 +94,15 @@ const DadosPessoais = () => {
     try {
       // Atualizar nome e email no Supabase
       const { error: updateError } = await supabase
-        .from("profiles")
-        .update({
-          full_name: nome,
-          email: email,
-          updated_at: new Date(),
-        })
-        .eq("id", userId);
+  .from("profiles")
+  .update({
+    full_name: nome,
+    email: email,
+  })
+  .eq("id", userId);
+  await supabase.auth.updateUser({ email });
+
+
 
       if (updateError) {
         Alert.alert("Erro ao salvar", updateError.message);

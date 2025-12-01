@@ -7,14 +7,17 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
 const screenWidth = Dimensions.get('window').width;
 
-// CARD DO PRODUTO
+/* -------------------------------------------------------------
+   COMPONENTE DO CARD DE PRODUTO
+------------------------------------------------------------- */
 const ProductCard = ({ product, navigation }) => {
   const formattedProduct = {
     id: product.id,
@@ -24,6 +27,67 @@ const ProductCard = ({ product, navigation }) => {
     image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
   };
 
+  /* -------------------------------------------------------------
+     ADICIONAR AO CARRINHO NO SUPABASE
+  ------------------------------------------------------------- */
+const adicionarAoCarrinho = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    alert("Você precisa estar logado para adicionar ao carrinho.");
+    return;
+  }
+
+  // Verifica se já existe registro no carrinho
+  const { data: existente, error: erroBusca } = await supabase
+    .from("carrinho")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("produto_id", product.id)
+    .maybeSingle();
+
+  if (erroBusca) {
+    console.error("Erro ao verificar carrinho:", erroBusca);
+    alert("Erro ao verificar o carrinho.");
+    return;
+  }
+
+  // Se já existe → só atualiza quantidade
+  if (existente) {
+    const { error: erroUpdate } = await supabase
+      .from("carrinho")
+      .update({ quantidade: existente.quantidade + 1 })
+      .eq("id", existente.id);
+
+    if (erroUpdate) {
+      console.error("Erro ao atualizar quantidade:", erroUpdate);
+      alert("Erro ao atualizar o carrinho.");
+    } else {
+      navigation.navigate("PaginaCarrinho");
+    }
+
+    return;
+  }
+
+  // Se NÃO existe → insere novo item
+  const { error } = await supabase
+    .from("carrinho")
+    .insert({
+      user_id: user.id,
+      produto_id: product.id,
+      quantidade: 1
+    });
+
+  if (error) {
+    console.error("Erro ao adicionar item:", error);
+    alert("Erro ao adicionar ao carrinho.");
+  } else {
+    navigation.navigate("PaginaCarrinho");
+  }
+};
+
+
+
   return (
     <View style={styles.cardContainer}>
       <View style={styles.imageWrapper}>
@@ -32,9 +96,12 @@ const ProductCard = ({ product, navigation }) => {
           style={styles.productImage}
         />
 
+        {/* ❤️ FAVORITOS */}
         <TouchableOpacity
           style={styles.favoriteIcon}
-          onPress={() => navigation.navigate("PaginaFavoritos", { produto: formattedProduct })}
+          onPress={() =>
+            navigation.navigate("PaginaFavoritos", { produto: formattedProduct })
+          }
         >
           <Ionicons name="heart-outline" size={20} color="#aaa" />
         </TouchableOpacity>
@@ -50,9 +117,8 @@ const ProductCard = ({ product, navigation }) => {
         <View style={styles.priceCartRow}>
           <Text style={styles.productPrice}>{formattedProduct.price}</Text>
 
-          <TouchableOpacity
-            onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
-          >
+          {/* 🛒 ADICIONAR AO CARRINHO */}
+          <TouchableOpacity onPress={adicionarAoCarrinho}>
             <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
           </TouchableOpacity>
         </View>
@@ -61,11 +127,16 @@ const ProductCard = ({ product, navigation }) => {
   );
 };
 
-// PÁGINA PRINCIPAL (BRINCOS)
+/* -------------------------------------------------------------
+   PÁGINA PRINCIPAL (BRINCOS)
+------------------------------------------------------------- */
 export default function PaginaBrincos({ navigation }) {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [loading, setLoading] = useState(true);
 
+  /* -------------------------------------------------------------
+     CARREGAR PRODUTOS DO SUPABASE
+  ------------------------------------------------------------- */
   useEffect(() => {
     const loadProducts = async () => {
       const { data, error } = await supabase
@@ -87,7 +158,7 @@ export default function PaginaBrincos({ navigation }) {
 
   return (
     <View style={styles.screenContainer}>
-      
+
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
@@ -167,7 +238,9 @@ export default function PaginaBrincos({ navigation }) {
   );
 }
 
-// ESTILOS
+/* -------------------------------------------------------------
+   ESTILOS
+------------------------------------------------------------- */
 const styles = StyleSheet.create({
   screenContainer: { flex: 1, backgroundColor: "#fff" },
   scrollViewContent: { paddingHorizontal: 15, paddingBottom: 20 },
@@ -186,7 +259,6 @@ const styles = StyleSheet.create({
   logoText: { fontSize: 18, fontWeight: "bold", color: "#333" },
   logoSubtitle: { fontSize: 12, color: "#555", marginTop: -3 },
 
-  /* ⭐️ MENU DAS CATEGORIAS */
   categoryNav: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -240,6 +312,13 @@ const styles = StyleSheet.create({
   productType: { fontSize: 14, color: "#7a4f9e" },
   productTitle: { fontSize: 15, fontWeight: "600", marginVertical: 3 },
   productPrice: { fontSize: 16, fontWeight: "bold", color: "#7a4f9e" },
+
+  priceCartRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+  },
 
   bottomNav: {
     height: 60,

@@ -27,6 +27,49 @@ const ProductCard = ({ product, navigation }) => {
     image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
   };
 
+  /* ADICIONAR AO CARRINHO + REDIRECIONAR */
+  const adicionarAoCarrinho = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      Alert.alert("Atenção", "Você precisa estar logado para adicionar ao carrinho.");
+      return;
+    }
+
+    // Verifica se já existe no carrinho
+    const { data: existente } = await supabase
+      .from("carrinho")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("produto_id", product.id)
+      .maybeSingle();
+
+    if (existente) {
+      await supabase
+        .from("carrinho")
+        .update({ quantidade: existente.quantidade + 1 })
+        .eq("id", existente.id);
+    } else {
+      const { error } = await supabase
+        .from("carrinho")
+        .insert({
+          user_id: user.id,
+          produto_id: product.id,
+          quantidade: 1
+        });
+
+      if (error) {
+        console.error(error);
+        Alert.alert("Erro", "Não foi possível adicionar ao carrinho.");
+        return;
+      }
+    }
+
+    // Redirecionar para o carrinho
+    navigation.navigate("PaginaCarrinho");
+  };
+
+
   return (
     <View style={styles.cardContainer}>
       <View style={styles.imageWrapper}>
@@ -44,16 +87,17 @@ const ProductCard = ({ product, navigation }) => {
       </View>
 
       <View style={styles.cardDetails}>
-        <Text style={styles.productType}>{formattedProduct.type}</Text>
+        <Text style={[styles.productType, { color: '#7a4f9e' }]}>
+          {formattedProduct.type}
+        </Text>
 
         <Text style={styles.productTitle}>{formattedProduct.name}</Text>
 
         <View style={styles.priceCartRow}>
           <Text style={styles.productPrice}>{formattedProduct.price}</Text>
 
-          <TouchableOpacity
-            onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
-          >
+          {/* ÍCONE DO CARRINHO ATUALIZADO */}
+          <TouchableOpacity onPress={adicionarAoCarrinho}>
             <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
           </TouchableOpacity>
         </View>

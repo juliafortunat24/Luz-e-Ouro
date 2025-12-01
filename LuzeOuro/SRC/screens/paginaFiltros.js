@@ -28,20 +28,63 @@ const filterOptions = {
 // ... (código anterior)
 
 const ProductCard = ({ product, navigation }) => {
-  // ⭐️ FORMATANDO O OBJETO DO PRODUTO AQUI
+
   const formattedProduct = {
     id: product.id,
-    type: product.material, // Corresponde ao 'type' da Pagina Inicial
-    name: product.nome,     // Corresponde ao 'name' da Pagina Inicial
-    price: `R$ ${Number(product.preco).toFixed(2).replace('.', ',')}`, // Formata o preço
+    type: product.material,
+    name: product.nome,
+    price: `R$ ${Number(product.preco).toFixed(2).replace('.', ',')}`,
     image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
   };
+
+  /* ADICIONAR AO CARRINHO + REDIRECIONAR */
+  const adicionarAoCarrinho = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      Alert.alert("Atenção", "Você precisa estar logado para adicionar ao carrinho.");
+      return;
+    }
+
+    // Verifica se já existe no carrinho
+    const { data: existente } = await supabase
+      .from("carrinho")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("produto_id", product.id)
+      .maybeSingle();
+
+    if (existente) {
+      await supabase
+        .from("carrinho")
+        .update({ quantidade: existente.quantidade + 1 })
+        .eq("id", existente.id);
+    } else {
+      const { error } = await supabase
+        .from("carrinho")
+        .insert({
+          user_id: user.id,
+          produto_id: product.id,
+          quantidade: 1
+        });
+
+      if (error) {
+        console.error(error);
+        Alert.alert("Erro", "Não foi possível adicionar ao carrinho.");
+        return;
+      }
+    }
+
+    // Redirecionar para o carrinho
+    navigation.navigate("PaginaCarrinho");
+  };
+
 
   return (
     <View style={styles.cardContainer}>
       <View style={styles.imageWrapper}>
         <Image
-          source={{ uri: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem" }}
+          source={{ uri: formattedProduct.image }}
           style={styles.productImage}
         />
 
@@ -55,19 +98,16 @@ const ProductCard = ({ product, navigation }) => {
 
       <View style={styles.cardDetails}>
         <Text style={[styles.productType, { color: '#7a4f9e' }]}>
-          {product.material}
+          {formattedProduct.type}
         </Text>
 
-        <Text style={styles.productTitle}>{product.nome}</Text>
+        <Text style={styles.productTitle}>{formattedProduct.name}</Text>
 
         <View style={styles.priceCartRow}>
-          <Text style={styles.productPrice}>
-            R$ {Number(product.preco).toFixed(2).replace('.', ',')}
-          </Text>
+          <Text style={styles.productPrice}>{formattedProduct.price}</Text>
 
-          <TouchableOpacity
-            onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
-          >
+          {/* ÍCONE DO CARRINHO ATUALIZADO */}
+          <TouchableOpacity onPress={adicionarAoCarrinho}>
             <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
           </TouchableOpacity>
         </View>

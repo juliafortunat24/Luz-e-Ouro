@@ -7,15 +7,19 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
 const screenWidth = Dimensions.get('window').width;
 
-// CARD DO PRODUTO
+/* -------------------------------------------------------------
+   CARD DO PRODUTO — atualizado com adicionarAoCarrinho
+------------------------------------------------------------- */
 const ProductCard = ({ product, navigation }) => {
+
   const formattedProduct = {
     id: product.id,
     type: product.material,
@@ -23,6 +27,49 @@ const ProductCard = ({ product, navigation }) => {
     price: `R$ ${Number(product.preco).toFixed(2).replace('.', ',')}`,
     image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
   };
+
+  /* ADICIONAR AO CARRINHO + REDIRECIONAR */
+  const adicionarAoCarrinho = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      Alert.alert("Atenção", "Você precisa estar logado para adicionar ao carrinho.");
+      return;
+    }
+
+    // Verifica se já existe no carrinho
+    const { data: existente } = await supabase
+      .from("carrinho")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("produto_id", product.id)
+      .maybeSingle();
+
+    if (existente) {
+      await supabase
+        .from("carrinho")
+        .update({ quantidade: existente.quantidade + 1 })
+        .eq("id", existente.id);
+    } else {
+      const { error } = await supabase
+        .from("carrinho")
+        .insert({
+          user_id: user.id,
+          produto_id: product.id,
+          quantidade: 1
+        });
+
+      if (error) {
+        console.error(error);
+        Alert.alert("Erro", "Não foi possível adicionar ao carrinho.");
+        return;
+      }
+    }
+
+    // Redirecionar para o carrinho
+    navigation.navigate("PaginaCarrinho");
+  };
+
 
   return (
     <View style={styles.cardContainer}>
@@ -50,9 +97,8 @@ const ProductCard = ({ product, navigation }) => {
         <View style={styles.priceCartRow}>
           <Text style={styles.productPrice}>{formattedProduct.price}</Text>
 
-          <TouchableOpacity
-            onPress={() => navigation.navigate("PaginaCarrinho", { produto: product })}
-          >
+          {/* ÍCONE DO CARRINHO ATUALIZADO */}
+          <TouchableOpacity onPress={adicionarAoCarrinho}>
             <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
           </TouchableOpacity>
         </View>
@@ -61,7 +107,10 @@ const ProductCard = ({ product, navigation }) => {
   );
 };
 
-// PÁGINA PRINCIPAL (ANÉIS)
+
+/* -------------------------------------------------------------
+   PÁGINA PRINCIPAL (ANÉIS)
+------------------------------------------------------------- */
 export default function PaginaAneis({ navigation }) {
   const [aneis, setAneis] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +134,7 @@ export default function PaginaAneis({ navigation }) {
 
   return (
     <View style={styles.screenContainer}>
-      
+
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
@@ -100,7 +149,7 @@ export default function PaginaAneis({ navigation }) {
         </View>
       </View>
 
-      {/* ⭐️ NAVEGAÇÃO ENTRE CATEGORIAS (MESMA DA PÁGINA DE BRINCOS) */}
+      {/* ⭐️ NAVEGAÇÃO ENTRE CATEGORIAS */}
       <View style={styles.categoryNav}>
         <TouchableOpacity onPress={() => navigation.navigate("PaginaBrincos")}>
           <Text style={styles.categoryButton}>Brincos</Text>
@@ -119,7 +168,7 @@ export default function PaginaAneis({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* CONTEÚDO */}
+      {/* LISTA */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <Text style={styles.sectionTitle}>Anéis</Text>
 
@@ -165,7 +214,10 @@ export default function PaginaAneis({ navigation }) {
   );
 }
 
-// ESTILOS — IGUAIS AOS DA PÁGINA DE BRINCOS
+
+/* -------------------------------------------------------------
+   ESTILOS (iguais aos da sua página original)
+------------------------------------------------------------- */
 const styles = StyleSheet.create({
   screenContainer: { flex: 1, backgroundColor: "#fff" },
   scrollViewContent: { paddingHorizontal: 15, paddingBottom: 20 },
@@ -184,7 +236,6 @@ const styles = StyleSheet.create({
   logoText: { fontSize: 18, fontWeight: "bold", color: "#333" },
   logoSubtitle: { fontSize: 12, color: "#555", marginTop: -3 },
 
-  /* ⭐️ MENU DAS CATEGORIAS */
   categoryNav: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -238,6 +289,13 @@ const styles = StyleSheet.create({
   productType: { fontSize: 14, color: "#7a4f9e" },
   productTitle: { fontSize: 15, fontWeight: "600", marginVertical: 3 },
   productPrice: { fontSize: 16, fontWeight: "bold", color: "#7a4f9e" },
+
+  priceCartRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+  },
 
   bottomNav: {
     height: 60,
