@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { supabase } from './SRC/supabaseClient';
+
+// Importando o ThemeProvider
+import { ThemeProvider } from './SRC/screens/ThemeContext';
+
 import Login from './SRC/screens/login';
 import Cadastro from './SRC/screens/cadastro';
 import PaginaInicial from './SRC/screens/paginaInicial';
@@ -41,30 +45,34 @@ export default function App() {
   }, []);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {session ? (<>
-          <Stack.Screen name="PaginaInicial" component={PaginaInicial} />
-          <Stack.Screen name="PaginaRelogios" component={PaginaRelogios} />
-          <Stack.Screen name="PaginaBrincos" component={PaginaBrincos} />
-          <Stack.Screen name="PaginaColares" component={PaginaColares} />
-          <Stack.Screen name="PaginaAneis" component={PaginaAneis} />
-          <Stack.Screen name="PaginaFiltros" component={PaginaFiltros} />
-          <Stack.Screen name="PaginaCarrinho" component={PaginaCarrinho} />
-          <Stack.Screen name="PaginaFavoritos" component={PaginaFavoritos} />
-          <Stack.Screen name="PaginaPerfil" component={PaginaPerfil} />
-          <Stack.Screen name="CadastroProdutos" component={CadastroProdutos} />
-          <Stack.Screen name="PaginaAdmin" component={PaginaAdmin} />
-          <Stack.Screen name="Catalogo" component={Catalogo} />
-          <Stack.Screen name="DadosPessoais" component={DadosPessoais} />
-        </>
-        ) : (
-          <>
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="Cadastro" component={Cadastro} />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    // Envolvendo toda a aplicação com o ThemeProvider
+    <ThemeProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {session ? (
+            <>
+              <Stack.Screen name="PaginaInicial" component={PaginaInicial} />
+              <Stack.Screen name="PaginaRelogios" component={PaginaRelogios} />
+              <Stack.Screen name="PaginaBrincos" component={PaginaBrincos} />
+              <Stack.Screen name="PaginaColares" component={PaginaColares} />
+              <Stack.Screen name="PaginaAneis" component={PaginaAneis} />
+              <Stack.Screen name="PaginaFiltros" component={PaginaFiltros} />
+              <Stack.Screen name="PaginaCarrinho" component={PaginaCarrinho} />
+              <Stack.Screen name="PaginaFavoritos" component={PaginaFavoritos} />
+              <Stack.Screen name="PaginaPerfil" component={PaginaPerfil} />
+              <Stack.Screen name="CadastroProdutos" component={CadastroProdutos} />
+              <Stack.Screen name="PaginaAdmin" component={PaginaAdmin} />
+              <Stack.Screen name="Catalogo" component={Catalogo} />
+              <Stack.Screen name="DadosPessoais" component={DadosPessoais} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="Login" component={Login} />
+              <Stack.Screen name="Cadastro" component={Cadastro} />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }

@@ -3,7 +3,12 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, Scro
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../supabaseClient";
 
+// ⭐ IMPORTANDO O TEMA
+import { useTheme } from "./ThemeContext";
+
 export default function CadastrarProdutos({ navigation }) {
+  const { colors, isDark } = useTheme(); // ⭐ ACESSA O TEMA GLOBAL
+
   const [nome, setNome] = useState("");
   const [preco, setPreco] = useState("");
   const [material, setMaterial] = useState("Prata");
@@ -68,10 +73,10 @@ export default function CadastrarProdutos({ navigation }) {
       }
 
       Alert.alert("Sucesso", "Produto cadastrado!");
-      setNome(""); 
-      setPreco(""); 
-      setMaterial("Prata"); 
-      setTipo("Colar"); 
+      setNome("");
+      setPreco("");
+      setMaterial("Prata");
+      setTipo("Colar");
       setImagem(null);
 
     } catch (err) {
@@ -85,41 +90,63 @@ export default function CadastrarProdutos({ navigation }) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
-      
-      {/* Botão de voltar */}
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={{ padding: 20 }}
+    >
+      {/* VOLTAR */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backButtonText}>←</Text>
+        <Text style={[styles.backButtonText, { color: colors.primary }]}>←</Text>
       </TouchableOpacity>
 
-      <Text style={styles.title}>Cadastrar Produto</Text>
+      <Text style={[styles.title, { color: colors.primary }]}>Cadastrar Produto</Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, {
+          backgroundColor: colors.card,
+          color: colors.text,
+          borderColor: isDark ? "#444" : "#ccc",
+        }]}
         placeholder="Nome do Produto"
+        placeholderTextColor={isDark ? "#888" : "#999"}
         value={nome}
         onChangeText={setNome}
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, {
+          backgroundColor: colors.card,
+          color: colors.text,
+          borderColor: isDark ? "#444" : "#ccc",
+        }]}
         placeholder="Preço (R$)"
+        placeholderTextColor={isDark ? "#888" : "#999"}
         value={preco}
         onChangeText={handlePrecoChange}
         keyboardType="numeric"
       />
 
-      {/* Materiais */}
+      {/* MATERIAL */}
       <View style={styles.pickerWrapper}>
-        <Text style={styles.pickerLabel}>Material</Text>
-        <View style={styles.pickerContainer}>
+        <Text style={[styles.pickerLabel, { color: colors.text }]}>Material</Text>
+
+        <View style={[styles.pickerContainer, { borderColor: isDark ? "#444" : "#ccc" }]}>
           {["Prata", "Ouro", "Ouro Branco"].map((item, index) => (
             <TouchableOpacity
               key={item}
-              style={[styles.option, index === 2 && { borderRightWidth: 0 }]}
+              style={[styles.option, {
+                backgroundColor: colors.card,
+                borderRightWidth: index !== 2 ? 1 : 0,
+                borderRightColor: isDark ? "#444" : "#ccc",
+              }]}
               onPress={() => setMaterial(item)}
             >
-              <Text style={material === item ? styles.selectedOption : styles.optionText}>
+              <Text
+                style={material === item
+                  ? [styles.selectedOption, { backgroundColor: colors.primary }]
+                  : [styles.optionText, { color: colors.text }]
+                }
+              >
                 {item}
               </Text>
             </TouchableOpacity>
@@ -127,17 +154,27 @@ export default function CadastrarProdutos({ navigation }) {
         </View>
       </View>
 
-      {/* Tipos */}
+      {/* TIPO */}
       <View style={styles.pickerWrapper}>
-        <Text style={styles.pickerLabel}>Tipo</Text>
-        <View style={styles.pickerContainer}>
+        <Text style={[styles.pickerLabel, { color: colors.text }]}>Tipo</Text>
+
+        <View style={[styles.pickerContainer, { borderColor: isDark ? "#444" : "#ccc" }]}>
           {["Colar", "Relogios", "Anéis", "Brincos"].map((item, index) => (
             <TouchableOpacity
               key={item}
-              style={[styles.option, index === 3 && { borderRightWidth: 0 }]}
+              style={[styles.option, {
+                backgroundColor: colors.card,
+                borderRightWidth: index !== 3 ? 1 : 0,
+                borderRightColor: isDark ? "#444" : "#ccc",
+              }]}
               onPress={() => setTipo(item)}
             >
-              <Text style={tipo === item ? styles.selectedOption : styles.optionText}>
+              <Text
+                style={tipo === item
+                  ? [styles.selectedOption, { backgroundColor: colors.primary }]
+                  : [styles.optionText, { color: colors.text }]
+                }
+              >
                 {item}
               </Text>
             </TouchableOpacity>
@@ -145,33 +182,50 @@ export default function CadastrarProdutos({ navigation }) {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={pickImage}>
+      {/* BOTÃO IMAGEM */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: colors.primary }]}
+        onPress={pickImage}
+      >
         <Text style={styles.buttonText}>Escolher Imagem</Text>
       </TouchableOpacity>
 
       {imagem && <Image source={{ uri: imagem }} style={styles.previewImage} />}
 
-      <TouchableOpacity style={styles.button} onPress={cadastrarProduto}>
+      {/* BOTÃO CADASTRAR */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: colors.primary }]}
+        onPress={cadastrarProduto}
+      >
         <Text style={styles.buttonText}>Cadastrar Produto</Text>
       </TouchableOpacity>
+
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1 },
   backButton: { marginBottom: 10 },
-  backButtonText: { fontSize: 24, color: "#7a4f9e" },
-  title: { fontSize: 24, fontWeight: "700", marginBottom: 20, color: "#7a4f9e", textAlign: "center" },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12, marginBottom: 15 },
+  backButtonText: { fontSize: 24 },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+  },
   pickerWrapper: { marginBottom: 15 },
-  pickerLabel: { marginBottom: 5, fontWeight: "600", color: "#555" },
+  pickerLabel: { marginBottom: 5, fontWeight: "600" },
   pickerContainer: {
     flexDirection: "row",
-    flexWrap: "nowrap",
     justifyContent: "space-between",
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     overflow: "hidden",
   },
@@ -179,20 +233,16 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRightWidth: 1,
-    borderRightColor: "#ccc",
   },
-  optionText: { color: "#555" },
+  optionText: {},
   selectedOption: {
     color: "#fff",
     fontWeight: "700",
-    backgroundColor: "#7a4f9e",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 5,
   },
-  button: { backgroundColor: "#7a4f9e", padding: 15, borderRadius: 8, marginBottom: 15, alignItems: "center" },
+  button: { padding: 15, borderRadius: 8, marginBottom: 15, alignItems: "center" },
   buttonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
   previewImage: { width: "100%", height: 200, marginBottom: 15, borderRadius: 8 },
 });

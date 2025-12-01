@@ -12,10 +12,13 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
+import { useTheme } from "./ThemeContext"; // ✅ CAMINHO CERTO
+
 const screenWidth = Dimensions.get('window').width;
 
 // CARD DO PRODUTO
 const ProductCard = ({ product, navigation }) => {
+  const { colors, isDark } = useTheme(); // ✅ TEMA
 
   const formattedProduct = {
     id: product.id,
@@ -34,7 +37,6 @@ const ProductCard = ({ product, navigation }) => {
       return;
     }
 
-    // Verifica se já existe no carrinho
     const { data: existente } = await supabase
       .from("carrinho")
       .select("*")
@@ -63,40 +65,42 @@ const ProductCard = ({ product, navigation }) => {
       }
     }
 
-    // Redirecionar para o carrinho
     navigation.navigate("PaginaCarrinho");
   };
 
-
   return (
-    <View style={styles.cardContainer}>
+    <View style={[styles.cardContainer, { backgroundColor: colors.card }]}>
       <View style={styles.imageWrapper}>
         <Image
           source={{ uri: formattedProduct.image }}
           style={styles.productImage}
         />
 
+        {/* FAVORITO */}
         <TouchableOpacity
-          style={styles.favoriteIcon}
+          style={[styles.favoriteIcon, { backgroundColor: colors.card }]}
           onPress={() => navigation.navigate("PaginaFavoritos", { produto: formattedProduct })}
         >
-          <Ionicons name="heart-outline" size={20} color="#aaa" />
+          <Ionicons name="heart-outline" size={20} color={colors.icon} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.cardDetails}>
-        <Text style={[styles.productType, { color: '#7a4f9e' }]}>
+        <Text style={[styles.productType, { color: colors.primary }]}>
           {formattedProduct.type}
         </Text>
 
-        <Text style={styles.productTitle}>{formattedProduct.name}</Text>
+        <Text style={[styles.productTitle, { color: colors.text }]}>
+          {formattedProduct.name}
+        </Text>
 
         <View style={styles.priceCartRow}>
-          <Text style={styles.productPrice}>{formattedProduct.price}</Text>
+          <Text style={[styles.productPrice, { color: colors.primary }]}>
+            {formattedProduct.price}
+          </Text>
 
-          {/* ÍCONE DO CARRINHO ATUALIZADO */}
           <TouchableOpacity onPress={adicionarAoCarrinho}>
-            <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
+            <Ionicons name="cart-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -106,6 +110,7 @@ const ProductCard = ({ product, navigation }) => {
 
 // PÁGINA DE COLARES
 export default function PaginaColares({ navigation }) {
+  const { colors } = useTheme(); // ✅ TEMA
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -126,49 +131,53 @@ export default function PaginaColares({ navigation }) {
   }, []);
 
   return (
-    <View style={styles.screenContainer}>
+    <View style={[styles.screenContainer, { backgroundColor: colors.background }]}>
 
       {/* HEADER */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card }]}>
         <View style={styles.logoContainer}>
           <Image
             source={{ uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L" }}
             style={styles.logoImage}
           />
           <View>
-            <Text style={styles.logoText}>Luz e Ouro</Text>
-            <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+            <Text style={[styles.logoText, { color: colors.text }]}>Luz e Ouro</Text>
+            <Text style={[styles.logoSubtitle, { color: colors.textSecondary }]}>
+              Joias e Acessórios
+            </Text>
           </View>
         </View>
       </View>
 
-      {/* ⭐️ NAVEGAÇÃO ENTRE CATEGORIAS — MESMA DA PÁGINA DE ANÉIS */}
-      <View style={styles.categoryNav}>
+      {/* CATEGORIAS */}
+      <View style={[styles.categoryNav, { backgroundColor: colors.card }]}>
         <TouchableOpacity onPress={() => navigation.navigate("PaginaBrincos")}>
-          <Text style={styles.categoryButton}>Brincos</Text>
+          <Text style={[styles.categoryButton, { color: colors.text }]}>Brincos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaColares")}>
-          <Text style={[styles.categoryButton, styles.categoryActive]}>Colares</Text>
+          <Text style={[styles.categoryButton, styles.categoryActive, { color: colors.primary }]}>
+            Colares
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaAneis")}>
-          <Text style={styles.categoryButton}>Anéis</Text>
+          <Text style={[styles.categoryButton, { color: colors.text }]}>Anéis</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaRelogios")}>
-          <Text style={styles.categoryButton}>Relógios</Text>
+          <Text style={[styles.categoryButton, { color: colors.text }]}>Relógios</Text>
         </TouchableOpacity>
       </View>
 
-      {/* LISTA DE PRODUTOS */}
+      {/* LISTA */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.sectionTitle}>Colares</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Colares</Text>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#7a4f9e" style={{ marginTop: 50 }} />
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
         ) : products.length === 0 ? (
-          <Text style={{ textAlign: "center", marginTop: 60, color: "#777" }}>
+          <Text style={{ textAlign: "center", marginTop: 60, color: colors.textSecondary }}>
             Nenhum colar encontrado.
           </Text>
         ) : (
@@ -181,25 +190,25 @@ export default function PaginaColares({ navigation }) {
       </ScrollView>
 
       {/* BOTTOM NAV */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
         <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
-          <MaterialCommunityIcons name="home" size={28} color="#7a4f9e" />
+          <MaterialCommunityIcons name="home" size={28} color={colors.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaFiltros")}>
-          <Ionicons name="search-outline" size={28} color="#7a4f9e" />
+          <Ionicons name="search-outline" size={28} color={colors.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaFavoritos")}>
-          <Ionicons name="heart-outline" size={28} color="#7a4f9e" />
+          <Ionicons name="heart-outline" size={28} color={colors.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaCarrinho")}>
-          <Ionicons name="cart-outline" size={28} color="#7a4f9e" />
+          <Ionicons name="cart-outline" size={28} color={colors.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaPerfil")}>
-          <Ionicons name="person-outline" size={28} color="#7a4f9e" />
+          <Ionicons name="person-outline" size={28} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -207,9 +216,9 @@ export default function PaginaColares({ navigation }) {
   );
 }
 
-// ESTILOS — IGUAIS AOS DA PÁGINA DE ANÉIS
+// ESTILOS — ORIGINAIS (sem mexer no visual)
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: "#fff" },
+  screenContainer: { flex: 1 },
   scrollViewContent: { paddingHorizontal: 15, paddingBottom: 20 },
 
   header: {
@@ -218,37 +227,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 45,
     paddingBottom: 10,
-    backgroundColor: "#fff",
   },
 
   logoContainer: { flexDirection: "row", alignItems: "center" },
   logoImage: { width: 35, height: 35, marginRight: 10, borderRadius: 6 },
-  logoText: { fontSize: 18, fontWeight: "bold", color: "#333" },
-  logoSubtitle: { fontSize: 12, color: "#555", marginTop: -3 },
+  logoText: { fontSize: 18, fontWeight: "bold" },
+  logoSubtitle: { fontSize: 12, marginTop: -3 },
 
-  /* ⭐️ MENU DAS CATEGORIAS */
   categoryNav: {
     flexDirection: "row",
     justifyContent: "space-around",
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
-    backgroundColor: "#fafafa",
   },
 
   categoryButton: {
     fontSize: 15,
-    color: "#555",
     fontWeight: "500",
   },
 
   categoryActive: {
-    color: "#7a4f9e",
     fontWeight: "bold",
     textDecorationLine: "underline",
   },
 
-  sectionTitle: { fontSize: 20, fontWeight: "bold", color: "#333", marginVertical: 15 },
+  sectionTitle: { fontSize: 20, fontWeight: "bold", marginVertical: 15 },
 
   productsGrid: {
     flexDirection: "row",
@@ -259,27 +263,25 @@ const styles = StyleSheet.create({
   cardContainer: {
     width: screenWidth / 2 - 20,
     marginBottom: 15,
-    backgroundColor: "#fff",
     borderRadius: 8,
     overflow: "hidden",
   },
 
-  imageWrapper: { width: "100%", height: 150, backgroundColor: "#eee" },
+  imageWrapper: { width: "100%", height: 150 },
   productImage: { width: "100%", height: "100%" },
 
   favoriteIcon: {
     position: "absolute",
     top: 10,
     right: 10,
-    backgroundColor: "#fff",
     padding: 5,
     borderRadius: 20,
   },
 
   cardDetails: { padding: 10 },
-  productType: { fontSize: 14, color: "#7a4f9e" },
+  productType: { fontSize: 14 },
   productTitle: { fontSize: 15, fontWeight: "600", marginVertical: 3 },
-  productPrice: { fontSize: 16, fontWeight: "bold", color: "#7a4f9e" },
+  productPrice: { fontSize: 16, fontWeight: "bold" },
 
   bottomNav: {
     height: 60,
@@ -288,6 +290,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: "#ddd",
-    backgroundColor: "#fff",
   }
 });

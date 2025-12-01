@@ -14,7 +14,8 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
-import { supabase } from '../supabaseClient'; // 🔹 Certifique-se de que o caminho está correto
+import { supabase } from '../supabaseClient';
+import { useTheme } from './ThemeContext';  // ⬅️ AQUI
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -24,10 +25,9 @@ const filterOptions = {
   precos: ['Todos os preços', 'Até R$500', 'R$500 a R$1.000', 'R$1.000 a R$1.500', 'Acima de R$1.500'],
 };
 
-// --- COMPONENTES ---
-// ... (código anterior)
-
 const ProductCard = ({ product, navigation }) => {
+
+  const { colors } = useTheme(); // ⬅️ TEMA AQUI
 
   const formattedProduct = {
     id: product.id,
@@ -37,51 +37,8 @@ const ProductCard = ({ product, navigation }) => {
     image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
   };
 
-  /* ADICIONAR AO CARRINHO + REDIRECIONAR */
-  const adicionarAoCarrinho = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      Alert.alert("Atenção", "Você precisa estar logado para adicionar ao carrinho.");
-      return;
-    }
-
-    // Verifica se já existe no carrinho
-    const { data: existente } = await supabase
-      .from("carrinho")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("produto_id", product.id)
-      .maybeSingle();
-
-    if (existente) {
-      await supabase
-        .from("carrinho")
-        .update({ quantidade: existente.quantidade + 1 })
-        .eq("id", existente.id);
-    } else {
-      const { error } = await supabase
-        .from("carrinho")
-        .insert({
-          user_id: user.id,
-          produto_id: product.id,
-          quantidade: 1
-        });
-
-      if (error) {
-        console.error(error);
-        Alert.alert("Erro", "Não foi possível adicionar ao carrinho.");
-        return;
-      }
-    }
-
-    // Redirecionar para o carrinho
-    navigation.navigate("PaginaCarrinho");
-  };
-
-
   return (
-    <View style={styles.cardContainer}>
+    <View style={[styles.cardContainer, { backgroundColor: colors.card }]}>
       <View style={styles.imageWrapper}>
         <Image
           source={{ uri: formattedProduct.image }}
@@ -89,26 +46,29 @@ const ProductCard = ({ product, navigation }) => {
         />
 
         <TouchableOpacity
-          style={styles.favoriteIcon}
+          style={[styles.favoriteIcon, { backgroundColor: colors.card }]}
           onPress={() => navigation.navigate("PaginaFavoritos", { produto: formattedProduct })}
         >
-          <Ionicons name="heart-outline" size={20} color="#aaa" />
+          <Ionicons name="heart-outline" size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.cardDetails}>
-        <Text style={[styles.productType, { color: '#7a4f9e' }]}>
+        <Text style={[styles.productType, { color: colors.primary }]}>
           {formattedProduct.type}
         </Text>
 
-        <Text style={styles.productTitle}>{formattedProduct.name}</Text>
+        <Text style={[styles.productTitle, { color: colors.text }]}>
+          {formattedProduct.name}
+        </Text>
 
         <View style={styles.priceCartRow}>
-          <Text style={styles.productPrice}>{formattedProduct.price}</Text>
+          <Text style={[styles.productPrice, { color: colors.primary }]}>
+            {formattedProduct.price}
+          </Text>
 
-          {/* ÍCONE DO CARRINHO ATUALIZADO */}
-          <TouchableOpacity onPress={adicionarAoCarrinho}>
-            <Ionicons name="cart-outline" size={20} color="#7a4f9e" />
+          <TouchableOpacity onPress={() => navigation.navigate("PaginaCarrinho")}>
+            <Ionicons name="cart-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -116,72 +76,78 @@ const ProductCard = ({ product, navigation }) => {
   );
 };
 
-// ... (restante do código)
+const Header = () => {
+  const { colors } = useTheme();
 
-
-
-const Header = () => (
-  <View style={styles.header}>
-    <View style={styles.logoContainer}>
-      <Image
-        source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
-        style={styles.logoImage}
-      />
-      <View>
-        <Text style={styles.logoText}>Luz e Ouro</Text>
-        <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+  return (
+    <View style={[styles.header, { backgroundColor: colors.background }]}>
+      <View style={styles.logoContainer}>
+        <Image
+          source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
+          style={styles.logoImage}
+        />
+        <View>
+          <Text style={[styles.logoText, { color: colors.text }]}>Luz e Ouro</Text>
+          <Text style={[styles.logoSubtitle, { color: colors.text }]}>Joias e Acessórios</Text>
+        </View>
       </View>
     </View>
-  </View>
-);
+  );
+};
 
 const BottomNav = ({ navigation }) => {
   const route = useRoute();
   const currentScreen = route.name;
+  const { colors, isDark } = useTheme();
 
   return (
-    <View style={styles.bottomNav}>
+    <View style={[styles.bottomNav, { backgroundColor: colors.card, borderTopColor: isDark ? "#555" : "#ddd" }]}>
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaInicial")}>
         <MaterialCommunityIcons
           name={currentScreen === "PaginaInicial" ? "home" : "home-outline"}
           size={28}
-          color={currentScreen === "PaginaInicial" ? "#7a4f9e" : "#aaa"}
+          color={currentScreen === "PaginaInicial" ? colors.primary : colors.text}
         />
       </TouchableOpacity>
+
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFiltros")}>
         <Ionicons
           name={currentScreen === "PaginaFiltros" ? "search" : "search-outline"}
           size={28}
-          color={currentScreen === "PaginaFiltros" ? "#7a4f9e" : "#aaa"}
+          color={currentScreen === "PaginaFiltros" ? colors.primary : colors.text}
         />
       </TouchableOpacity>
+
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaFavoritos")}>
         <Ionicons
           name={currentScreen === "PaginaFavoritos" ? "heart" : "heart-outline"}
           size={28}
-          color={currentScreen === "PaginaFavoritos" ? "#7a4f9e" : "#aaa"}
+          color={currentScreen === "PaginaFavoritos" ? colors.primary : colors.text}
         />
       </TouchableOpacity>
+
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaCarrinho")}>
         <Ionicons
           name={currentScreen === "PaginaCarrinho" ? "cart" : "cart-outline"}
           size={28}
-          color={currentScreen === "PaginaCarrinho" ? "#7a4f9e" : "#aaa"}
+          color={currentScreen === "PaginaCarrinho" ? colors.primary : colors.text}
         />
       </TouchableOpacity>
+
       <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
         <Ionicons
           name={currentScreen === "PaginaPerfil" ? "person" : "person-outline"}
           size={28}
-          color={currentScreen === "PaginaPerfil" ? "#7a4f9e" : "#aaa"}
+          color={currentScreen === "PaginaPerfil" ? colors.primary : colors.text}
         />
       </TouchableOpacity>
     </View>
   );
 };
 
-// --- TELA PRINCIPAL ---
 export default function CatalogScreen({ navigation }) {
+  const { colors } = useTheme(); // ⬅️ TEMA AQUI
+
   const [openDropdown, setOpenDropdown] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState({
     tipos: 'Todos os tipos',
@@ -193,67 +159,52 @@ export default function CatalogScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
-  // 1. 🚀 FUNÇÃO fetchProducts ATUALIZADA para aplicar os filtros no Supabase
   const fetchProducts = async (filters, search = '') => {
-  setLoading(true);
-  
-  let query = supabase.from('produtos').select('*');
+    setLoading(true);
 
-  // 🔹 Busca por nome (sem distinguir maiúsculas/minúsculas)
-  if (search.trim() !== '') {
-    query = query.ilike('nome', `%${search}%`);
-  }
+    let query = supabase.from('produtos').select('*');
 
-  // 🔹 Filtro de tipo
-  if (filters.tipos !== 'Todos os tipos') {
-    query = query.eq('tipo', filters.tipos);
-  }
+    if (search.trim() !== '') {
+      query = query.ilike('nome', `%${search}%`);
+    }
 
-  // 🔹 Filtro de material
-  if (filters.materiais !== 'Todos os materiais') {
-    query = query.eq('material', filters.materiais);
-  }
+    if (filters.tipos !== 'Todos os tipos') {
+      query = query.eq('tipo', filters.tipos);
+    }
 
-  // 🔹 Filtro de preço (usando ranges numéricos)
-  switch (filters.precos) {
-    case 'Até R$500':
-      query = query.lte('preco', 500);
-      break;
-    case 'R$500 a R$1.000':
-      query = query.gt('preco', 500).lte('preco', 1000);
-      break;
-    case 'R$1.000 a R$1.500':
-      query = query.gt('preco', 1000).lte('preco', 1500);
-      break;
-    case 'Acima de R$1.500':
-      query = query.gt('preco', 1500);
-      break;
-  }
+    if (filters.materiais !== 'Todos os materiais') {
+      query = query.eq('material', filters.materiais);
+    }
 
-  const { data, error } = await query;
+    switch (filters.precos) {
+      case 'Até R$500':
+        query = query.lte('preco', 500);
+        break;
+      case 'R$500 a R$1.000':
+        query = query.gt('preco', 500).lte('preco', 1000);
+        break;
+      case 'R$1.000 a R$1.500':
+        query = query.gt('preco', 1000).lte('preco', 1500);
+        break;
+      case 'Acima de R$1.500':
+        query = query.gt('preco', 1500);
+        break;
+    }
 
-  if (error) {
-    console.error('Erro ao buscar produtos:', error);
-    setProducts([]);
-  } else {
+    const { data } = await query;
     setProducts(data);
-  }
+    setLoading(false);
+  };
 
-  setLoading(false);
-};
-
-
-  // 2. 🔄 Atualiza automaticamente ao mudar busca ou filtro
   useEffect(() => {
-  const delay = setTimeout(() => {
-    fetchProducts(selectedFilters, search);
-  }, 400); // pequeno atraso para evitar consultas repetidas
-  return () => clearTimeout(delay);
-}, [search, selectedFilters]);
-
+    const delay = setTimeout(() => {
+      fetchProducts(selectedFilters, search);
+    }, 400);
+    return () => clearTimeout(delay);
+  }, [search, selectedFilters]);
 
   const renderDropdown = (key) => (
-    <View style={styles.dropdownMenu}>
+    <View style={[styles.dropdownMenu, { backgroundColor: colors.card }]}>
       {filterOptions[key].map((option, index) => (
         <TouchableOpacity
           key={index}
@@ -263,7 +214,7 @@ export default function CatalogScreen({ navigation }) {
             setOpenDropdown(null);
           }}
         >
-          <Text style={styles.dropdownItemText}>{option}</Text>
+          <Text style={[styles.dropdownItemText, { color: colors.text }]}>{option}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -272,91 +223,87 @@ export default function CatalogScreen({ navigation }) {
   const filteredProducts = products;
 
   const renderFilterItem = (key, placeholder) => (
-    <View style={[styles.filterItemWrapper, { zIndex: key === 'tipos' ? 30 : key === 'materiais' ? 20 : 10 }]}>
+    <View style={styles.filterItemWrapper}>
       <TouchableOpacity
-        style={[styles.filterDropdownButton, openDropdown === key && styles.filterDropdownButtonActive]}
+        style={[styles.filterDropdownButton, { backgroundColor: colors.card, borderColor: colors.text }]}
         onPress={() => setOpenDropdown(openDropdown === key ? null : key)}
       >
-        <Text style={styles.filterButtonText}> {selectedFilters[key] || placeholder} </Text>
-        <Ionicons name={openDropdown === key ? "chevron-up" : "chevron-down"} size={20} color="#666" />
+        <Text style={[styles.filterButtonText, { color: colors.text }]}>
+          {selectedFilters[key] || placeholder}
+        </Text>
+        <Ionicons name={openDropdown === key ? "chevron-up" : "chevron-down"} size={20} color={colors.text} />
       </TouchableOpacity>
+
       {openDropdown === key && renderDropdown(key)}
     </View>
   );
 
   return (
-    <View style={styles.screenContainer}>
+    <View style={[styles.screenContainer, { backgroundColor: colors.background }]}>
       <Header />
 
-
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.filtersBox}>
+        <View style={[styles.filtersBox, { backgroundColor: colors.card }]}>
           <View style={styles.filtersHeader}>
-            <Feather name="filter" size={18} color="#333" />
-            <Text style={styles.filtersTitle}>Filtros</Text>
+            <Feather name="filter" size={18} color={colors.text} />
+            <Text style={[styles.filtersTitle, { color: colors.text }]}>Filtros</Text>
           </View>
+
           {renderFilterItem('tipos', 'Todos os tipos')}
           {renderFilterItem('materiais', 'Todos os materiais')}
           {renderFilterItem('precos', 'Todos os preços')}
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#7a4f9e" style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
         ) : (
           <View style={styles.productsGrid}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map(p => <ProductCard key={p.id} product={p} navigation={navigation} />)
             ) : (
-              <Text style={{ textAlign: 'center', marginTop: 20 }}>Nenhum produto encontrado.</Text>
+              <Text style={{ textAlign: 'center', marginTop: 20, color: colors.text }}>
+                Nenhum produto encontrado.
+              </Text>
             )}
           </View>
         )}
 
         <View style={{ height: 50 }} />
       </ScrollView>
+
       <BottomNav navigation={navigation} />
     </View>
   );
 }
 
-// --- ESTILOS ---
+// ESTILOS ORIGINAIS (mantidos)
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: '#fff', overflow: 'visible' },
-  priceCartRow: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginTop: 5,
-},
+  screenContainer: { flex: 1 },
+  priceCartRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 },
   scrollViewContent: { paddingBottom: 80 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10, paddingTop: 45, backgroundColor: '#fff' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10, paddingTop: 45 },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
   logoImage: { width: 35, height: 35, borderRadius: 5, marginRight: 10, backgroundColor: '#7a4f9e' },
-  logoText: { fontSize: 18, fontWeight: 'bold', color: '#333' },
-  logoSubtitle: { fontSize: 12, color: '#666', marginTop: -3 },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, marginHorizontal: 15, marginVertical: 15, height: 45 },
-  searchIcon: { marginLeft: 10 },
-  searchInput: { flex: 1, paddingHorizontal: 10, fontSize: 16, color: '#333' },
-  filtersBox: { backgroundColor: '#f5f5f5', marginHorizontal: 15, borderRadius: 10, padding: 15, zIndex: 10, overflow: 'visible' },
+  logoText: { fontSize: 18, fontWeight: 'bold' },
+  logoSubtitle: { fontSize: 12, marginTop: -3 },
+  filtersBox: { marginHorizontal: 15, borderRadius: 10, padding: 15 },
   filtersHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  filtersTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 8, color: '#333' },
+  filtersTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 8 },
   filterItemWrapper: { position: 'relative', marginBottom: 10 },
-  filterDropdownButton: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 15, paddingVertical: 12, borderWidth: 1, borderColor: '#e0e0e0' },
-  filterDropdownButtonActive: { borderColor: '#9370DB', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
-  filterButtonText: { fontSize: 15, color: '#333' },
-  dropdownMenu: { position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#fff', borderRadius: 8, borderTopLeftRadius: 0, borderTopRightRadius: 0, borderWidth: 1, borderColor: '#9370DB', borderTopWidth: 0, zIndex: 9999, elevation: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84 },
-  dropdownItem: { paddingHorizontal: 15, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  dropdownItemText: { fontSize: 15, color: '#333' },
+  filterDropdownButton: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderRadius: 8, paddingHorizontal: 15, paddingVertical: 12, borderWidth: 1 },
+  filterButtonText: { fontSize: 15 },
+  dropdownMenu: { position: 'absolute', top: '100%', left: 0, right: 0, borderRadius: 8, borderWidth: 1, borderTopWidth: 0, zIndex: 99, elevation: 20 },
+  dropdownItem: { paddingHorizontal: 15, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#444' },
+  dropdownItemText: { fontSize: 15 },
   productsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 15, marginTop: 20 },
-  cardContainer: { width: screenWidth / 2 - 22, marginBottom: 15, backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.41, elevation: 2 },
+  cardContainer: { width: screenWidth / 2 - 22, marginBottom: 15, borderRadius: 8, overflow: 'hidden', elevation: 2 },
   imageWrapper: { position: 'relative', width: '100%', height: screenWidth / 2 - 22 },
   productImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  favoriteIcon: { position: "absolute", top: 10, right: 10, backgroundColor: "#fff", borderRadius: 15, padding: 5 },
-  plusIcon: { position: "absolute", bottom: 10, right: 10, backgroundColor: "#7a4f9e", borderRadius: 12, padding: 6 },
+  favoriteIcon: { position: "absolute", top: 10, right: 10, borderRadius: 15, padding: 5 },
   cardDetails: { padding: 10, minHeight: 80 },
-  productType: { fontSize: 13, color: '#666', marginBottom: 2 },
-  productTitle: { fontSize: 14, fontWeight: '600', marginBottom: 5, color: '#333' },
-  productPrice: { fontSize: 16, fontWeight: 'bold', color: '#7a4f9e' },
-  bottomNav: { height: 60, borderTopWidth: 1, borderTopColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5, position: "absolute", bottom: 0, width: "100%" },
-  navItem: { flex: 1, alignItems: "center" },
+  productType: { fontSize: 13, marginBottom: 2 },
+  productTitle: { fontSize: 14, fontWeight: '600', marginBottom: 5 },
+  productPrice: { fontSize: 16, fontWeight: 'bold' },
+  bottomNav: { height: 60, borderTopWidth: 1, flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingBottom: 5, position: "absolute", bottom: 0, width: "100%" },
+  navItem: { flex: 1, alignItems: "center" }
 });

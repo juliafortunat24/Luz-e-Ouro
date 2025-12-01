@@ -7,21 +7,23 @@ import {
   Image,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { supabase } from "../supabaseClient";
-
+import { useTheme } from "./ThemeContext";
 
 export default function PaginaPerfil({ navigation }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Buscar os dados reais do usuário no Supabase
+  const { colors, toggleTheme, isDark } = useTheme();
+  const borderColor = isDark ? "#3a3a3a" : "#eee";
+  const dividerColor = isDark ? "#3a3a3a" : "#ddd";
+
   const fetchUserData = async () => {
     try {
-      // 1. Pegando o usuário logado
       const { data: authData, error: authError } = await supabase.auth.getUser();
-
       if (authError || !authData?.user) {
         Alert.alert("Erro", "Usuário não encontrado.");
         return;
@@ -29,7 +31,6 @@ export default function PaginaPerfil({ navigation }) {
 
       const user = authData.user;
 
-      // 2. Buscar dados na tabela 'profiles'
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -41,7 +42,6 @@ export default function PaginaPerfil({ navigation }) {
         return;
       }
 
-      // Gerar iniciais automaticamente
       const initials = data.full_name
         ? data.full_name
             .split(" ")
@@ -53,7 +53,7 @@ export default function PaginaPerfil({ navigation }) {
       setUserProfile({
         name: data.full_name,
         email: data.email,
-        initials: initials,
+        initials,
         memberSince: new Date(data.created_at).toLocaleDateString("pt-BR", {
           month: "long",
           year: "numeric",
@@ -61,7 +61,6 @@ export default function PaginaPerfil({ navigation }) {
         totalOrders: 0,
         totalFavorites: 0,
       });
-
     } catch (err) {
       Alert.alert("Erro inesperado", err.message);
     } finally {
@@ -75,57 +74,76 @@ export default function PaginaPerfil({ navigation }) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigation.replace("PaginaLogin");
+    navigation.replace("Login");
   };
 
   if (loading || !userProfile) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Carregando...</Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Botão de alternar tema */}
+      <TouchableOpacity
+        style={[
+          styles.themeButton,
+          { backgroundColor: colors.primary },
+        ]}
+        onPress={toggleTheme}
+      >
+        <Text style={styles.themeButtonText}>
+          {isDark ? "Tema Claro" : "Tema Escuro"}
+        </Text>
+      </TouchableOpacity>
+
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header]}>
         <View style={styles.logoContainer}>
           <Image
-            source={{ uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L" }}
-            style={styles.logoImage}
+            source={{ uri: "https://via.placeholder.com/35/7a4f9e/ffffff?text=L" }}
+            style={[styles.logoImage, { backgroundColor: colors.primary }]}
           />
           <View>
-            <Text style={styles.logoText}>Luz e Ouro</Text>
-            <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
+            <Text style={[styles.logoText, { color: colors.text }]}>Luz e Ouro</Text>
+            <Text style={[styles.logoSubtitle, { color: colors.text }]}>
+              Joias e Acessórios
+            </Text>
           </View>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Card do Usuário */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
+        <View style={[styles.profileCard, { backgroundColor: colors.card }]}>
+          <View style={[styles.avatarContainer, { backgroundColor: colors.primary }]}>
             <Text style={styles.avatarText}>{userProfile.initials}</Text>
           </View>
 
           <View style={styles.infoContainer}>
-            <Text style={styles.userName}>{userProfile.name}</Text>
-            <Text style={styles.userEmail}>{userProfile.email}</Text>
-            <Text style={styles.userSince}>
+            <Text style={[styles.userName, { color: colors.text }]}>{userProfile.name}</Text>
+            <Text style={[styles.userEmail, { color: colors.text }]}>{userProfile.email}</Text>
+            <Text style={[styles.userSince, { color: colors.text }]}>
               Cliente desde {userProfile.memberSince}
             </Text>
           </View>
 
-          <View style={styles.statsRow}>
+          <View style={[styles.statsRow, { borderTopColor: dividerColor }]}>
             <View style={styles.statBox}>
-              <Text style={styles.statCount}>{userProfile.totalOrders}</Text>
-              <Text style={styles.statLabel}>Pedidos</Text>
+              <Text style={[styles.statCount, { color: colors.primary }]}>
+                {userProfile.totalOrders}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.text }]}>Pedidos</Text>
             </View>
 
             <View style={styles.statBox}>
-              <Text style={styles.statCount}>{userProfile.totalFavorites}</Text>
-              <Text style={styles.statLabel}>Favoritos</Text>
+              <Text style={[styles.statCount, { color: colors.primary }]}>
+                {userProfile.totalFavorites}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.text }]}>Favoritos</Text>
             </View>
           </View>
         </View>
@@ -133,61 +151,64 @@ export default function PaginaPerfil({ navigation }) {
         {/* Botões de ações */}
         <View style={styles.quickAccessRow}>
           <TouchableOpacity
-            style={styles.quickAccessButton}
+            style={[styles.quickAccessButton, { backgroundColor: colors.card }]}
             onPress={() => navigation.navigate("PaginaInicial")}
           >
-            <Ionicons name="gift-outline" size={24} color="#7a4f9e" />
-            <Text style={styles.quickAccessText}>Comprar</Text>
+            <Ionicons name="gift-outline" size={24} color={colors.primary} />
+            <Text style={[styles.quickAccessText, { color: colors.primary }]}>Comprar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.quickAccessButton}
+            style={[styles.quickAccessButton, { backgroundColor: colors.card }]}
             onPress={() => navigation.navigate("PaginaFavoritos")}
           >
-            <Ionicons name="heart-outline" size={24} color="#7a4f9e" />
-            <Text style={styles.quickAccessText}>Favoritos</Text>
+            <Ionicons name="heart-outline" size={24} color={colors.primary} />
+            <Text style={[styles.quickAccessText, { color: colors.primary }]}>Favoritos</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Navegação inferior */}
-        <View style={styles.navSection}>
+        {/* Navegação inferior (seção de opções) */}
+        <View style={[styles.navSection, { backgroundColor: colors.card, borderColor }]}>
           <TouchableOpacity
-            style={styles.navItem}
+            style={[styles.navItem, { borderBottomColor: borderColor }]}
             onPress={() => navigation.navigate("DadosPessoais")}
           >
-            <Ionicons name="person-outline" size={24} color="#555" />
-            <Text style={styles.navItemText}>Dados Pessoais</Text>
-            <Ionicons name="chevron-forward" size={20} color="#ccc" />
+            <Ionicons name="person-outline" size={24} color={colors.text} />
+            <Text style={[styles.navItemText, { color: colors.text }]}>Dados Pessoais</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.text} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.navItem} onPress={handleSignOut}>
-            <Ionicons name="log-out-outline" size={24} color="#555" />
-            <Text style={styles.navItemText}>Sair da Conta</Text>
-            <Ionicons name="chevron-forward" size={20} color="#ccc" />
+          <TouchableOpacity
+            style={[styles.navItem, { borderBottomColor: "transparent" }]}
+            onPress={handleSignOut}
+          >
+            <Ionicons name="log-out-outline" size={24} color={colors.text} />
+            <Text style={[styles.navItemText, { color: colors.text }]}>Sair da Conta</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
       </ScrollView>
 
       {/* Navegação Bottom */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: colors.background, borderTopColor: dividerColor }]}>
         <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
-          <MaterialCommunityIcons name="home-outline" size={28} color="#aaa" />
+          <MaterialCommunityIcons name="home-outline" size={28} color={colors.text} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaFiltros")}>
-          <Ionicons name="search-outline" size={28} color="#aaa" />
+          <Ionicons name="search-outline" size={28} color={colors.text} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaFavoritos")}>
-          <Ionicons name="heart-outline" size={28} color="#aaa" />
+          <Ionicons name="heart-outline" size={28} color={colors.text} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaCarrinho")}>
-          <Ionicons name="cart-outline" size={28} color="#aaa" />
+          <Ionicons name="cart-outline" size={28} color={colors.text} />
         </TouchableOpacity>
 
         <TouchableOpacity>
-          <Ionicons name="person" size={28} color="#7a4f9e" />
+          <Ionicons name="person" size={28} color={colors.primary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -195,15 +216,23 @@ export default function PaginaPerfil({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1 },
   scrollContent: { paddingBottom: 20 },
+
+  themeButton: {
+    padding: 10,
+    borderRadius: 8,
+    alignSelf: "flex-end",
+    margin: 15,
+  },
+  themeButtonText: { color: "#fff", fontWeight: "bold" },
+
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 15,
     paddingVertical: 15,
     paddingTop: 45,
-    backgroundColor: "#fff",
   },
   logoContainer: { flexDirection: "row", alignItems: "center" },
   logoImage: {
@@ -211,13 +240,11 @@ const styles = StyleSheet.create({
     height: 35,
     borderRadius: 5,
     marginRight: 10,
-    backgroundColor: "#7a4f9e",
   },
-  logoText: { fontSize: 18, fontWeight: "bold", color: "#333" },
-  logoSubtitle: { fontSize: 12, color: "#666", marginTop: -3 },
+  logoText: { fontSize: 18, fontWeight: "bold" },
+  logoSubtitle: { fontSize: 12, marginTop: -3 },
 
   profileCard: {
-    backgroundColor: "#f5f5f5",
     margin: 15,
     padding: 20,
     borderRadius: 12,
@@ -227,28 +254,27 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#7a4f9e",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 15,
   },
   avatarText: { color: "#fff", fontSize: 32, fontWeight: "bold" },
+
   infoContainer: { alignItems: "center", marginBottom: 20 },
-  userName: { fontSize: 18, fontWeight: "700", color: "#333" },
-  userEmail: { fontSize: 14, color: "#666", marginTop: 2 },
-  userSince: { fontSize: 12, color: "#999", marginTop: 4 },
+  userName: { fontSize: 18, fontWeight: "700" },
+  userEmail: { fontSize: 14, marginTop: 2 },
+  userSince: { fontSize: 12, marginTop: 4 },
 
   statsRow: {
     flexDirection: "row",
     justifyContent: "space-around",
     width: "100%",
     borderTopWidth: 1,
-    borderTopColor: "#ddd",
     paddingTop: 15,
   },
   statBox: { alignItems: "center" },
-  statCount: { fontSize: 22, fontWeight: "bold", color: "#7a4f9e" },
-  statLabel: { fontSize: 14, color: "#666" },
+  statCount: { fontSize: 22, fontWeight: "bold" },
+  statLabel: { fontSize: 14 },
 
   quickAccessRow: {
     flexDirection: "row",
@@ -258,7 +284,6 @@ const styles = StyleSheet.create({
   },
   quickAccessButton: {
     flexDirection: "row",
-    backgroundColor: "#f5f5f5",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -270,15 +295,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 14,
     fontWeight: "600",
-    color: "#7a4f9e",
   },
 
   navSection: {
     marginHorizontal: 15,
-    backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#eee",
+    overflow: "hidden",
   },
   navItem: {
     flexDirection: "row",
@@ -286,17 +309,14 @@ const styles = StyleSheet.create({
     padding: 15,
     justifyContent: "space-between",
     borderBottomWidth: 1,
-    borderColor: "#eee",
   },
-  navItemText: { flex: 1, marginLeft: 15, fontSize: 16, color: "#333" },
+  navItemText: { flex: 1, marginLeft: 15, fontSize: 16 },
 
   bottomNav: {
     height: 60,
     borderTopWidth: 1,
-    borderColor: "#ddd",
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    backgroundColor: "#fff",
   },
 });
