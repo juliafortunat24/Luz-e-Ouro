@@ -42,10 +42,10 @@ export default function PaginaPerfil({ navigation }) {
 
       const initials = data.full_name
         ? data.full_name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
         : "?";
 
       setUserProfile({
@@ -57,7 +57,7 @@ export default function PaginaPerfil({ navigation }) {
           year: "numeric",
         }),
         totalOrders: 0,
-        totalFavorites: 0,
+
       });
     } catch (err) {
       Alert.alert("Erro inesperado", err.message);
@@ -142,9 +142,7 @@ export default function PaginaPerfil({ navigation }) {
               <Text style={[styles.statCount, { color: colors.primary }]}>
                 {userProfile.totalFavorites}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>
-                Favoritos
-              </Text>
+
             </View>
           </View>
         </View>
@@ -283,11 +281,12 @@ const styles = StyleSheet.create({
   userSince: { fontSize: 12, marginTop: 4 },
   statsRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "center",
     width: "100%",
     borderTopWidth: 1,
     paddingTop: 15,
   },
+
   statBox: { alignItems: "center" },
   statCount: { fontSize: 22, fontWeight: "bold" },
   statLabel: { fontSize: 14 },

@@ -12,13 +12,16 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
+import { Modal } from "react-native";
 
-// ⭐ IMPORTAÇÃO DO TEMA (estando na mesma pasta)
 import { useTheme } from "./ThemeContext";
 
 const screenWidth = Dimensions.get('window').width;
 
 const ProductCard = ({ product, navigation }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+
   const { colors } = useTheme();
 
   const formattedProduct = {
@@ -27,6 +30,61 @@ const ProductCard = ({ product, navigation }) => {
     name: product.nome,
     price: `R$ ${Number(product.preco).toFixed(2).replace('.', ',')}`,
     image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
+  };
+
+  // 🔥 Verifica se o produto já está favoritado
+  useEffect(() => {
+    const checkFavorite = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("favoritos")
+        .select("*")
+        .eq("id_usuario", user.id)
+        .eq("id_produto", product.id)
+        .maybeSingle();
+
+      if (data) setIsFavorite(true);
+    };
+
+    checkFavorite();
+  }, []);
+
+  // 🔥 Função de favoritar / desfavoritar
+  const toggleFavorito = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      Alert.alert("Atenção", "Você precisa estar logado para favoritar um item.");
+      return;
+    }
+
+    // remover dos favoritos
+    if (isFavorite) {
+      await supabase
+        .from("favoritos")
+        .delete()
+        .eq("id_usuario", user.id)
+        .eq("id_produto", product.id);
+
+      setIsFavorite(false);
+      return;
+    }
+
+    // adicionar aos favoritos
+    const { error } = await supabase
+      .from("favoritos")
+      .insert({
+        id_usuario: user.id,
+        id_produto: product.id,
+      });
+
+    if (!error) {
+      setIsFavorite(true);
+      navigation.navigate("PaginaFavoritos");  // 👉 envia para favoritos!
+    }
+
   };
 
   const adicionarAoCarrinho = async () => {
@@ -71,18 +129,24 @@ const ProductCard = ({ product, navigation }) => {
   return (
     <View style={[styles.cardContainer, { backgroundColor: colors.card }]}>
       <View style={[styles.imageWrapper, { backgroundColor: colors.card }]}>
-        <Image
-          source={{ uri: formattedProduct.image }}
-          style={styles.productImage}
-        />
+        <TouchableOpacity onPress={() => setShowModal(true)}>
+          <Image
+            source={{ uri: formattedProduct.image }}
+            style={styles.productImage}
+          />
+        </TouchableOpacity>
 
+        {/* ❤️ ÍCONE DE FAVORITAR COMPLETO */}
         <TouchableOpacity
           style={[styles.favoriteIcon, { backgroundColor: colors.card }]}
-          onPress={() =>
-            navigation.navigate("PaginaFavoritos", { produto: formattedProduct })
-          }
+          onPress={toggleFavorito}
         >
-          <Ionicons name="heart-outline" size={20} color="#aaa" />
+          <Ionicons
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={20}
+            color={isFavorite ? colors.primary : "#aaa"}   // 💜 roxo quando favoritado
+          />
+
         </TouchableOpacity>
       </View>
 
@@ -104,13 +168,63 @@ const ProductCard = ({ product, navigation }) => {
             <Ionicons name="cart-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
+
+        {/* MODAL */}
+        <Modal
+          visible={showModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowModal(false)}
+        >
+          <View style={styles.overlay}>
+            <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+
+              <Image
+                source={{ uri: formattedProduct.image }}
+                style={styles.modalImage}
+              />
+
+              <Text style={[styles.modalName, { color: colors.text }]}>
+                {formattedProduct.name}
+              </Text>
+
+              <Text style={[styles.modalType, { color: colors.primary }]}>
+                {formattedProduct.type}
+              </Text>
+
+              <Text style={[styles.modalPrice, { color: colors.text }]}>
+                {formattedProduct.price}
+              </Text>
+
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={async () => {
+                  await adicionarAoCarrinho();
+                  setShowModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Adicionar ao Carrinho</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowModal(false)}
+              >
+                <Text style={[styles.closeButtonText, { color: colors.primary }]}>
+                  Fechar
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+          </View>
+        </Modal>
       </View>
     </View>
   );
 };
 
 export default function PaginaAneis({ navigation }) {
-  const { colors } = useTheme(); // ⭐ pega as cores do tema
+  const { colors } = useTheme();
   const [aneis, setAneis] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -131,13 +245,9 @@ export default function PaginaAneis({ navigation }) {
 
   return (
     <View style={[styles.screenContainer, { backgroundColor: colors.background }]}>
-      
+
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <View style={styles.logoContainer}>
-          <Image
-            source={{ uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L" }}
-            style={styles.logoImage}
-          />
           <View>
             <Text style={[styles.logoText, { color: colors.text }]}>Luz e Ouro</Text>
             <Text style={[styles.logoSubtitle, { color: colors.text }]}>
@@ -222,7 +332,6 @@ const styles = StyleSheet.create({
   },
 
   logoContainer: { flexDirection: "row", alignItems: "center" },
-  logoImage: { width: 35, height: 35, marginRight: 10, borderRadius: 6 },
   logoText: { fontSize: 18, fontWeight: "bold" },
   logoSubtitle: { fontSize: 12, marginTop: -3 },
 
@@ -287,5 +396,72 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     borderTopWidth: 1,
-  }
+  },
+
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+
+  modalCard: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 20,
+    alignItems: "center",
+  },
+
+  modalImage: {
+    width: 300,
+    height: 300,
+    borderRadius: 15,
+  },
+
+  modalName: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginTop: 15,
+  },
+
+  modalType: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 5,
+  },
+
+  modalPrice: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginTop: 5,
+  },
+
+  modalButton: {
+    backgroundColor: "#7a4f9e",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  closeButton: {
+    marginTop: 15,
+  },
+
+  closeButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
 });

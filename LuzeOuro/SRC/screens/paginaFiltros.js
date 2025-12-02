@@ -45,12 +45,7 @@ const ProductCard = ({ product, navigation }) => {
           style={styles.productImage}
         />
 
-        <TouchableOpacity
-          style={[styles.favoriteIcon, { backgroundColor: colors.card }]}
-          onPress={() => navigation.navigate("PaginaFavoritos", { produto: formattedProduct })}
-        >
-          <Ionicons name="heart-outline" size={20} color={colors.text} />
-        </TouchableOpacity>
+        
       </View>
 
       <View style={styles.cardDetails}>

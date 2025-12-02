@@ -14,15 +14,23 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../supabaseClient';
 
-import { useTheme } from "./ThemeContext";  // ⭐ CAMINHO CORRETO
+import { useTheme } from "./ThemeContext";  
+import { Modal } from "react-native";
 
 const screenWidth = Dimensions.get('window').width;
 
 
 // ⭐ CARD DO PRODUTO
-const ProductCard = ({ product, navigation }) => {
-  const { colors } = useTheme(); // ⭐ TEMA
+const ProductCard = ({ product, navigation, userId }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
+  const { colors } = useTheme();
+
+
+  // ---------------------------
+  // ⭐ FORMATAÇÃO DO PRODUTO
+  // ---------------------------
   const formattedProduct = {
     id: product.id,
     type: product.material,
@@ -30,6 +38,58 @@ const ProductCard = ({ product, navigation }) => {
     price: `R$ ${Number(product.preco).toFixed(2).replace('.', ',')}`,
     image: product.foto_url || "https://placehold.co/200x200?text=Sem+Imagem",
   };
+
+
+  // -----------------------------------------------------
+  // ⭐ CHECAR SE O PRODUTO JÁ ESTÁ NOS FAVORITOS
+  // -----------------------------------------------------
+  useEffect(() => {
+    if (userId) checkFavorite();
+  }, [userId]);
+
+  const checkFavorite = async () => {
+    const { data } = await supabase
+      .from("favoritos")
+      .select("*")
+      .eq("id_usuario", userId)
+      .eq("id_produto", product.id)
+      .maybeSingle();
+
+    if (data) setIsFavorite(true);
+  };
+
+
+  // -----------------------------------------------------
+  // ⭐ ADICIONAR / REMOVER FAVORITO + REDIRECIONAR
+  // -----------------------------------------------------
+  const toggleFavorite = async () => {
+    if (!userId) {
+      Alert.alert("Atenção", "Você precisa estar logado.");
+      return;
+    }
+
+    if (isFavorite) {
+      await supabase
+        .from("favoritos")
+        .delete()
+        .eq("id_usuario", userId)
+        .eq("id_produto", product.id);
+
+      setIsFavorite(false);
+      return;
+    }
+
+    await supabase.from("favoritos").insert({
+      id_usuario: userId,
+      id_produto: product.id
+    });
+
+    setIsFavorite(true);
+
+    navigation.navigate("PaginaFavoritos");
+  };
+
+
 
   /* ADICIONAR AO CARRINHO + REDIRECIONAR */
   const adicionarAoCarrinho = async () => {
@@ -75,19 +135,31 @@ const ProductCard = ({ product, navigation }) => {
   return (
     <View style={[styles.cardContainer, { backgroundColor: colors.card }]}>
       <View style={[styles.imageWrapper, { backgroundColor: colors.card }]}>
-        <Image
-          source={{ uri: formattedProduct.image }}
-          style={styles.productImage}
-        />
+        
+        {/* IMAGEM */}
+        <TouchableOpacity onPress={() => setShowModal(true)}>
+          <Image
+            source={{ uri: formattedProduct.image }}
+            style={styles.productImage}
+          />
+        </TouchableOpacity>
 
+        {/* ❤️ ÍCONE DE FAVORITO */}
         <TouchableOpacity
           style={[styles.favoriteIcon, { backgroundColor: colors.card }]}
-          onPress={() => navigation.navigate("PaginaFavoritos", { produto: formattedProduct })}
+          onPress={toggleFavorite}
         >
-          <Ionicons name="heart-outline" size={20} color={colors.icon} />
+          <Ionicons
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={22}
+            color={isFavorite ? "#8A2BE2" : colors.icon}
+          />
         </TouchableOpacity>
+
       </View>
 
+
+      {/* TEXTO */}
       <View style={styles.cardDetails}>
         <Text style={[styles.productType, { color: colors.primary }]}>
           {formattedProduct.type}
@@ -106,6 +178,58 @@ const ProductCard = ({ product, navigation }) => {
             <Ionicons name="cart-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
+
+
+        {/* MODAL */}
+        <Modal
+          visible={showModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowModal(false)}
+        >
+          <View style={styles.overlay}>
+            <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+
+              <Image
+                source={{ uri: formattedProduct.image }}
+                style={styles.modalImage}
+              />
+
+              <Text style={[styles.modalName, { color: colors.text }]}>
+                {formattedProduct.name}
+              </Text>
+
+              <Text style={[styles.modalType, { color: colors.primary }]}>
+                {formattedProduct.type}
+              </Text>
+
+              <Text style={[styles.modalPrice, { color: colors.text }]}>
+                {formattedProduct.price}
+              </Text>
+
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={async () => {
+                  await adicionarAoCarrinho();
+                  setShowModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Adicionar ao Carrinho</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowModal(false)}
+              >
+                <Text style={[styles.closeButtonText, { color: colors.primary }]}>
+                  Fechar
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+          </View>
+        </Modal>
+
       </View>
     </View>
   );
@@ -117,10 +241,20 @@ const ProductCard = ({ product, navigation }) => {
 // ⭐ PÁGINA PRINCIPAL
 export default function PaginaRelogios({ navigation }) {
 
-  const { colors } = useTheme();   // ⭐ TEMA
+  const { colors } = useTheme();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+
+
+  // PEGAR USUÁRIO
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) setUserId(data.user.id);
+    });
+  }, []);
+
 
 
   const fetchRelogios = async () => {
@@ -149,18 +283,16 @@ export default function PaginaRelogios({ navigation }) {
 
       {/* HEADER */}
       <View style={[styles.header, { backgroundColor: colors.card }]}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={{ uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L" }}
-            style={styles.logoImage}
-          />
 
+        <View style={styles.logoContainer}>
           <View>
             <Text style={[styles.logoText, { color: colors.text }]}>Luz e Ouro</Text>
             <Text style={[styles.logoSubtitle, { color: colors.subtext }]}>Joias e Acessórios</Text>
           </View>
         </View>
+
       </View>
+
 
 
       {/* NAVEGAÇÃO ENTRE CATEGORIAS */}
@@ -186,7 +318,6 @@ export default function PaginaRelogios({ navigation }) {
 
 
 
-
       {/* CONTEÚDO */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Relógios</Text>
@@ -203,17 +334,20 @@ export default function PaginaRelogios({ navigation }) {
               <ProductCard
                 key={prod.id}
                 product={prod}
+                userId={userId}
                 navigation={navigation}
               />
             ))}
           </View>
         )}
+
       </ScrollView>
 
 
 
       {/* ⭐ BOTTOM NAV */}
       <View style={[styles.bottomNav, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
+
         <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
           <MaterialCommunityIcons name="home" size={28} color={colors.primary} />
         </TouchableOpacity>
@@ -233,6 +367,7 @@ export default function PaginaRelogios({ navigation }) {
         <TouchableOpacity onPress={() => navigation.navigate("PaginaPerfil")}>
           <Ionicons name="person-outline" size={28} color={colors.primary} />
         </TouchableOpacity>
+
       </View>
 
     </View>
@@ -242,7 +377,7 @@ export default function PaginaRelogios({ navigation }) {
 
 
 
-// ⭐ ESTILOS — IDENTICOS AO ORIGINAL
+// ⭐ ESTILOS (IGUAIS AO ORIGINAL)
 const styles = StyleSheet.create({
   screenContainer: { flex: 1 },
   scrollViewContent: { paddingHorizontal: 15, paddingBottom: 20 },
@@ -256,13 +391,6 @@ const styles = StyleSheet.create({
   },
 
   logoContainer: { flexDirection: "row", alignItems: "center" },
-
-  logoImage: {
-    width: 35,
-    height: 35,
-    marginRight: 10,
-    borderRadius: 6,
-  },
 
   logoText: { fontSize: 18, fontWeight: "bold" },
   logoSubtitle: { fontSize: 12, marginTop: -3 },
@@ -328,5 +456,72 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     borderTopWidth: 1,
+  },
+
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+
+  modalCard: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 20,
+    alignItems: "center",
+  },
+
+  modalImage: {
+    width: 300,
+    height: 300,
+    borderRadius: 15,
+  },
+
+  modalName: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginTop: 15,
+  },
+
+  modalType: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 5,
+  },
+
+  modalPrice: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginTop: 5,
+  },
+
+  modalButton: {
+    backgroundColor: "#7a4f9e",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  closeButton: {
+    marginTop: 15,
+  },
+
+  closeButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

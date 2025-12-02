@@ -1,274 +1,278 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRoute } from "@react-navigation/native";
-import { useTheme } from "./ThemeContext"; // 🔹 IMPORTAÇÃO DO TEMA
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { supabase } from "../supabaseClient";
+import { useTheme } from "./ThemeContext";
 
-export default function PaginaFavoritos({ route, navigation }) {
-  const { colors, isDark } = useTheme(); // 🔹 ACESSA TEMA GLOBAL
+export default function PaginaFavoritos({ navigation }) {
+  const { colors } = useTheme();
 
+  const [user, setUser] = useState(null);
   const [favoritos, setFavoritos] = useState([]);
-  const routeAtual = useRoute();
-  const currentScreen = routeAtual.name;
+  const [loading, setLoading] = useState(true);
 
+  // ------------------------------------------------------------------
+  // 1️⃣ Buscar usuário logado
+  // ------------------------------------------------------------------
   useEffect(() => {
-    carregarFavoritos();
+    const loadUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user) {
+        await carregarFavoritos(user.id);
+      }
+    };
+    loadUser();
   }, []);
 
-  useEffect(() => {
-    if (route.params?.produto) {
-      adicionarFavorito(route.params.produto);
-    }
-  }, [route.params?.produto]);
+  // ------------------------------------------------------------------
+  // 2️⃣ Buscar favoritos + produtos completos
+  // ------------------------------------------------------------------
+  const carregarFavoritos = async (userId) => {
+    setLoading(true);
 
-  const carregarFavoritos = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem("@favoritos");
-      if (jsonValue) setFavoritos(JSON.parse(jsonValue));
-    } catch (e) {
-      console.log("Erro ao carregar favoritos:", e);
+    // Buscar os favoritos do usuário
+    const { data: favs, error } = await supabase
+      .from("favoritos")
+      .select("id_produto")
+      .eq("id_usuario", userId);
+
+    if (error) {
+      console.error("Erro ao carregar favoritos:", error);
+      setLoading(false);
+      return;
     }
+
+    if (favs.length === 0) {
+      setFavoritos([]);
+      setLoading(false);
+      return;
+    }
+
+    // Buscar detalhes dos produtos relacionados
+    const ids = favs.map((item) => item.id_produto);
+
+    const { data: produtos, error: prodError } = await supabase
+      .from("produtos")
+      .select("id, nome, preco, material, tipo, foto_url")
+      .in("id", ids);
+
+    if (prodError) {
+      console.error("Erro ao buscar produtos:", prodError);
+    }
+
+    // Formatar produtos para o card
+    const formatados = produtos.map((item) => ({
+      id: item.id,
+      name: item.nome,
+      type: item.material || item.tipo,
+      price: `R$ ${parseFloat(item.preco).toFixed(2).replace(".", ",")}`,
+      image: item.foto_url,
+    }));
+
+    setFavoritos(formatados);
+    setLoading(false);
   };
 
-  const salvarFavoritos = async (itens) => {
-    try {
-      await AsyncStorage.setItem("@favoritos", JSON.stringify(itens));
-    } catch (e) {
-      console.log("Erro ao salvar favoritos:", e);
+  // ------------------------------------------------------------------
+  // 3️⃣ Remover favorito individual
+  // ------------------------------------------------------------------
+  const removerFavorito = async (idProduto) => {
+    const { error } = await supabase
+      .from("favoritos")
+      .delete()
+      .eq("id_usuario", user.id)
+      .eq("id_produto", idProduto);
+
+    if (error) {
+      console.error("Erro ao remover favorito:", error);
+      return;
     }
+
+    carregarFavoritos(user.id);
   };
 
-  const adicionarFavorito = async (novo) => {
-    try {
-      const jsonValue = await AsyncStorage.getItem("@favoritos");
-      const listaAtual = jsonValue ? JSON.parse(jsonValue) : [];
-
-      if (listaAtual.some((item) => item.id === novo.id)) return;
-
-      const atualizados = [...listaAtual, novo];
-      setFavoritos(atualizados);
-      await salvarFavoritos(atualizados);
-    } catch (e) {
-      console.log("Erro ao adicionar favorito:", e);
-    }
-  };
-
-  const removerItem = async (id) => {
-    const atualizados = favoritos.filter((item) => item.id !== id);
-    setFavoritos(atualizados);
-    await salvarFavoritos(atualizados);
-  };
-
-  const limparTudo = async () => {
+  // ------------------------------------------------------------------
+  // 4️⃣ Remover todos
+  // ------------------------------------------------------------------
+  const limparTodos = async () => {
+    await supabase.from("favoritos").delete().eq("id_usuario", user.id);
     setFavoritos([]);
-    await AsyncStorage.removeItem("@favoritos");
   };
 
-  const renderItem = ({ item }) => (
-    <View style={[styles.card, { backgroundColor: colors.card }]}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <View style={styles.info}>
-        <Text style={[styles.type, { color: colors.text }]}>{item.type}</Text>
-        <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-        <Text style={styles.price}>{item.price}</Text>
+  // ------------------------------------------------------------------
+  // 5️⃣ Renderização
+  // ------------------------------------------------------------------
+  if (loading)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#7a4f9e" />
       </View>
-
-      <TouchableOpacity onPress={() => removerItem(item.id)} style={styles.trashButton}>
-        <Ionicons name="trash-outline" size={20} color="#7a4f9e" />
-      </TouchableOpacity>
-    </View>
-  );
+    );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView style={{ flex: 1 }}>
 
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.background }]}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={{ uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L" }}
-            style={styles.logoImage}
-          />
-          <View>
-            <Text style={[styles.logoText, { color: colors.text }]}>Luz e Ouro</Text>
-            <Text style={[styles.logoSubtitle, { color: colors.text }]}>
-              Joias e Acessórios
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.topRow}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {favoritos.length} Itens Favoritados
-        </Text>
-
-        {favoritos.length > 0 && (
-          <TouchableOpacity onPress={limparTudo}>
-            <Text style={styles.clearText}>Limpar tudo</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {favoritos.length > 0 ? (
-        <FlatList
-          data={favoritos}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.list}
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, { color: colors.text }]}>
-            Nenhum item favoritado ainda 💜
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.text }]}>
+            {favoritos.length} Itens Favoritados
           </Text>
+
+          {favoritos.length > 0 && (
+            <TouchableOpacity onPress={limparTodos}>
+              <Text style={styles.clearAll}>Limpar tudo</Text>
+            </TouchableOpacity>
+          )}
         </View>
-      )}
 
-      <TouchableOpacity
-        style={styles.continueButton}
-        onPress={() => navigation.navigate("PaginaInicial")}
-      >
-        <Text style={styles.continueText}>Continuar explorando</Text>
-      </TouchableOpacity>
+        {favoritos.length === 0 ? (
+          <Text style={{ color: colors.text, textAlign: "center", marginTop: 20 }}>
+            Nenhum item favoritado.
+          </Text>
+        ) : (
+          favoritos.map((item) => (
+            <View key={item.id} style={[styles.card, { backgroundColor: colors.card }]}>
 
-      {/* Bottom Nav */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.card, borderTopColor: "#555" }]}>
+              <Image source={{ uri: item.image }} style={styles.image} />
+
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.cardName, { color: colors.text }]}>{item.name}</Text>
+                <Text style={[styles.cardType, { color: "#7a4f9e" }]}>{item.type}</Text>
+                <Text style={[styles.cardPrice, { color: colors.text }]}>{item.price}</Text>
+              </View>
+
+              <TouchableOpacity onPress={() => removerFavorito(item.id)}>
+                <Ionicons name="trash-outline" size={24} color="#7a4f9e" />
+              </TouchableOpacity>
+
+            </View>
+          ))
+        )}
+
+        {/* BOTÃO CONTINUAR */}
+        <TouchableOpacity
+          style={styles.exploreBtn}
+          onPress={() => navigation.navigate("PaginaInicial")}
+        >
+          <Text style={styles.exploreText}>Continuar explorando</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* MENU INFERIOR */}
+      <View style={[styles.bottomNav, { backgroundColor: colors.background }]}>
         <TouchableOpacity onPress={() => navigation.navigate("PaginaInicial")}>
-          <MaterialCommunityIcons
-            name={currentScreen === "PaginaInicial" ? "home" : "home-outline"}
-            size={26}
-            color={currentScreen === "PaginaInicial" ? "#7a4f9e" : colors.text}
-          />
+          <Ionicons name="home-outline" size={26} color="#7a4f9e" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaFiltros")}>
-          <Ionicons
-            name={currentScreen === "PaginaFiltros" ? "search" : "search-outline"}
-            size={26}
-            color={currentScreen === "PaginaFiltros" ? "#7a4f9e" : colors.text}
-          />
+          <Ionicons name="search-outline" size={26} color="#7a4f9e" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaFavoritos")}>
-          <Ionicons
-            name={currentScreen === "PaginaFavoritos" ? "heart" : "heart-outline"}
-            size={26}
-            color={currentScreen === "PaginaFavoritos" ? "#7a4f9e" : colors.text}
-          />
+          <Ionicons name="heart" size={26} color="#7a4f9e" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaCarrinho")}>
-          <Ionicons
-            name={currentScreen === "PaginaCarrinho" ? "cart" : "cart-outline"}
-            size={26}
-            color={currentScreen === "PaginaCarrinho" ? "#7a4f9e" : colors.text}
-          />
+          <Ionicons name="cart-outline" size={26} color="#7a4f9e" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PaginaPerfil")}>
-          <Ionicons
-            name={currentScreen === "PaginaPerfil" ? "person" : "person-outline"}
-            size={26}
-            color={currentScreen === "PaginaPerfil" ? "#7a4f9e" : colors.text}
-          />
+          <Ionicons name="person-outline" size={26} color="#7a4f9e" />
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
+// ------------------------------------------------------------------
+// 6️⃣ ESTILOS
+// ------------------------------------------------------------------
+
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+  },
 
   header: {
+    marginTop: 40,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    paddingTop: 45,
+    marginHorizontal: 20,
   },
 
-  logoContainer: { flexDirection: "row", alignItems: "center" },
-
-  logoImage: {
-    width: 35,
-    height: 35,
-    borderRadius: 5,
-    marginRight: 10,
-    backgroundColor: "#7a4f9e",
+  title: {
+    fontSize: 16,
+    fontWeight: "700",
   },
 
-  logoText: {
-    fontSize: 18,
-    fontWeight: "bold",
+  clearAll: {
+    color: "#7a4f9e",
+    fontWeight: "600",
   },
-
-  logoSubtitle: {
-    fontSize: 12,
-    marginTop: -3,
-  },
-
-  topRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    alignItems: "center",
-  },
-
-  title: { fontSize: 16, fontWeight: "bold" },
-
-  clearText: { color: "#7a4f9e", fontSize: 14 },
-
-  list: { paddingHorizontal: 16, paddingBottom: 80 },
 
   card: {
-    borderRadius: 12,
-    padding: 10,
-    marginVertical: 8,
     flexDirection: "row",
+    padding: 15,
+    marginHorizontal: 15,
+    marginTop: 15,
+    borderRadius: 10,
     alignItems: "center",
+    gap: 15,
   },
 
-  image: { width: 70, height: 70, borderRadius: 10 },
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 10,
+  },
 
-  info: { marginLeft: 10, flex: 1 },
+  cardName: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
 
-  type: { fontSize: 12 },
+  cardType: {
+    fontSize: 12,
+  },
 
-  name: { fontSize: 15, fontWeight: "bold" },
+  cardPrice: {
+    marginTop: 5,
+    fontSize: 15,
+    fontWeight: "700",
+  },
 
-  price: { fontSize: 14, color: "#7a4f9e", fontWeight: "600" },
-
-  trashButton: { padding: 6 },
-
-  continueButton: {
+  exploreBtn: {
+    marginHorizontal: 20,
     backgroundColor: "#7a4f9e",
-    padding: 14,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 80,
-    alignItems: "center",
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 20,
+    marginBottom: 30,
   },
 
-  continueText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
+  exploreText: {
+    textAlign: "center",
+    color: "#fff",
+    fontWeight: "700",
+  },
 
   bottomNav: {
     height: 60,
-    borderTopWidth: 1,
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    paddingBottom: 5,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
   },
-
-  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  emptyText: { fontSize: 15 },
 });
