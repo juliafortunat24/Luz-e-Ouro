@@ -95,12 +95,7 @@ export default function PaginaPerfil({ navigation }) {
       {/* Header */}
       <View style={[styles.header]}>
         <View style={styles.logoContainer}>
-          <Image
-            source={{
-              uri: "https://via.placeholder.com/35/7a4f9e/ffffff?text=L",
-            }}
-            style={[styles.logoImage, { backgroundColor: colors.primary }]}
-          />
+
           <View>
             <Text style={[styles.logoText, { color: colors.text }]}>
               Luz e Ouro
@@ -131,12 +126,7 @@ export default function PaginaPerfil({ navigation }) {
           </View>
           <View style={[styles.statsRow, { borderTopColor: dividerColor }]}>
             <View style={styles.statBox}>
-              <Text style={[styles.statCount, { color: colors.primary }]}>
-                {userProfile.totalOrders}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>
-                Pedidos
-              </Text>
+              
             </View>
             <View style={styles.statBox}>
               <Text style={[styles.statCount, { color: colors.primary }]}>

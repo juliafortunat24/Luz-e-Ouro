@@ -1,88 +1,98 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform
+} from 'react-native';
 import { supabase } from '../supabaseClient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
 
- const handleLogin = async () => {
-  setError(null);
+  const handleLogin = async () => {
+    setError(null);
 
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setError(error.message);
-      return;
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      if (data.user && email.toLowerCase() === 'admin@admin.com') {
+        navigation.navigate('PaginaAdmin');
+      } else {
+        navigation.navigate('PaginaInicial');
+      }
+    } catch (err) {
+      setError("Erro inesperado: " + err.message);
     }
-
-    // login OK
-    if (data.user && email.toLowerCase() === 'admin@admin.com') {
-      navigation.navigate('PaginaAdmin'); // admin
-    } else {
-      navigation.navigate('PaginaInicial'); // usuários comuns
-    }
-  } catch (err) {
-    setError("Erro inesperado: " + err.message);
-  }
-};
-
-
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Título */}
-      <Text style={styles.title}>Luz e Ouro</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#fff' }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        style={{ flex: 1, backgroundColor: '#fff' }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.container}>
 
-      {/* Caixa arredondada fixa embaixo */}
-      <View style={styles.formBox}>
-        {/* Logo do colar */}
-        <Image
-          source={require('../../assets/colar roxo fundo.png')} // coloque sua imagem aqui
-          style={styles.logo}
-          resizeMode="contain"
-        />
+          <Text style={styles.title}>Luz e Ouro</Text>
 
-        {/* Campo Email */}
-        <Text style={styles.label}>Email:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-        />
+          <View style={styles.formBox}>
+            <Image
+              source={require('../../assets/colar roxo fundo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
 
-        {/* Campo Senha */}
-        <Text style={styles.label}>Senha:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua senha"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+            <Text style={styles.label}>Email:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite seu email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+            />
 
-        {/* Erro */}
-        {error && <Text style={styles.error}>{error}</Text>}
+            <Text style={styles.label}>Senha:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite sua senha"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
 
-        {/* Botão Entrar */}
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Entrar</Text>
-        </TouchableOpacity>
+            {error && <Text style={styles.error}>{error}</Text>}
 
-        {/* Link Cadastro */}
-        <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
-          <Text style={styles.registerText}>
-            Não tem uma conta? <Text style={styles.registerLink}>Cadastre-se</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Entrar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
+              <Text style={styles.registerText}>
+                Não tem uma conta? <Text style={styles.registerLink}>Cadastre-se</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -91,23 +101,25 @@ const styles = StyleSheet.create({
     flex:1,
     backgroundColor:'#fff',
     alignItems:'center',
+    justifyContent:'flex-start'
   },
   title:{
     fontSize:26,
     fontWeight:'500',
     color:'#80608a',
-    marginTop:200, // deixa o título mais pra cima
+    marginTop:200,
     marginBottom:0,
   },
   formBox:{
-    position:'absolute', // fixa no fundo
-    bottom:0,
+    flex:1,
     width:'100%',
     backgroundColor:'#d9d6d6',
     borderTopLeftRadius:200,
     borderTopRightRadius:200,
     padding:85,
-    alignItems:'center'
+    paddingBottom:120, // evita espaço branco no final
+    alignItems:'center',
+    justifyContent:'flex-start',
   },
   logo:{
     width:500,

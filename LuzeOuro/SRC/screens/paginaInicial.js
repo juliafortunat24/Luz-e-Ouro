@@ -16,11 +16,13 @@ import { supabase } from '../supabaseClient';
 import { useTheme } from "./ThemeContext";
 
 const categories = [
-  { id: "1", name: "Anéis", icon: "diamond", screen: "PaginaAneis" },
-  { id: "2", name: "Colares", icon: "star", screen: "PaginaColares" },
-  { id: "3", name: "Relógios", icon: "clock", screen: "PaginaRelogios" },
-  { id: "4", name: "Brincos", icon: "crown", screen: "PaginaBrincos" },
+  { id: "4", name: "Brincos", icon: "diamond", screen: "PaginaBrincos" },
+  { id: "2", name: "Colares", icon: "necklace", screen: "PaginaColares" },
+  { id: "1", name: "Anéis", icon: "ring", screen: "PaginaAneis" },
+  { id: "3", name: "Relógios", icon: "watch", screen: "PaginaRelogios" },
 ];
+
+
 
 export default function App({ navigation }) {
 
@@ -348,7 +350,6 @@ export default function App({ navigation }) {
         <TouchableOpacity style={styles(colors).navItem} onPress={() => navigation.navigate("PaginaPerfil")}>
           <Ionicons name="person-outline" size={28} color="#7a4f9e" />
         </TouchableOpacity>
-
       </View>
 
     </View>
@@ -358,6 +359,7 @@ export default function App({ navigation }) {
 
 /* ESTILOS */
 const styles = (colors) => StyleSheet.create({
+
   container: { flex: 1, backgroundColor: colors.background },
 
   header: {

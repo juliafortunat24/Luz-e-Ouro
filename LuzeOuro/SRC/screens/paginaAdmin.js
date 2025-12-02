@@ -8,10 +8,10 @@ import { supabase } from '../supabaseClient';
 
 
 const categories = [
-  { id: "1", name: "Anéis", icon: "diamond", screen: "PaginaAneis" },
-  { id: "2", name: "Colares", icon: "star", screen: "PaginaColares" },
-  { id: "3", name: "Relógios", icon: "clock", screen: "PaginaRelogios" },
   { id: "4", name: "Brincos", icon: "crown", screen: "PaginaBrincos" },
+  { id: "2", name: "Colares", icon: "star", screen: "PaginaColares" },
+  { id: "1", name: "Anéis", icon: "diamond", screen: "PaginaAneis" },
+  { id: "3", name: "Relógios", icon: "clock", screen: "PaginaRelogios" },
   { id: "5", name: "Cadastro", icon: "crown", screen: "CadastroProdutos" },
 ];
 

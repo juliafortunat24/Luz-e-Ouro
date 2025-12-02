@@ -173,7 +173,10 @@ const ProductCard = ({ product, navigation }) => {
           <View style={styles.overlay}>
             <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
 
-              <Image source={{ uri: formattedProduct.image }} style={styles.modalImage} />
+              <Image
+                source={{ uri: formattedProduct.image }}
+                style={styles.modalImage}
+              />
 
               <Text style={[styles.modalName, { color: colors.text }]}>
                 {formattedProduct.name}
@@ -187,7 +190,13 @@ const ProductCard = ({ product, navigation }) => {
                 {formattedProduct.price}
               </Text>
 
-              <TouchableOpacity style={styles.modalButton} onPress={adicionarAoCarrinho}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={async () => {
+                  await adicionarAoCarrinho();
+                  setShowModal(false);
+                }}
+              >
                 <Text style={styles.modalButtonText}>Adicionar ao Carrinho</Text>
               </TouchableOpacity>
 

@@ -77,10 +77,6 @@ const Header = () => {
   return (
     <View style={[styles.header, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
-        <Image
-          source={{ uri: 'https://via.placeholder.com/30/8a2be2/ffffff?text=L' }}
-          style={styles.logoImage}
-        />
         <View>
           <Text style={[styles.logoText, { color: colors.text }]}>Luz e Ouro</Text>
           <Text style={[styles.logoSubtitle, { color: colors.text }]}>Joias e Acessórios</Text>

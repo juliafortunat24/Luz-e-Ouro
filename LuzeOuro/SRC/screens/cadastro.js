@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 import { supabase } from '../supabaseClient';
 
 export default function RegisterScreen({ navigation }) {
@@ -10,69 +20,92 @@ export default function RegisterScreen({ navigation }) {
 
   const handleSignUp = async () => {
     setError(null);
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
+
     if (error) {
       setError(error.message);
       return;
     }
+
     const userId = data.user.id;
-    await supabase.from('profiles').upsert({ id: userId, full_name: name, email });
+
+    await supabase
+      .from('profiles')
+      .upsert({ id: userId, full_name: name, email });
+
     navigation.replace('Home');
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Cadastro</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#fff' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        style={{ flex: 1, backgroundColor: '#fff' }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.container}>
 
-      <View style={styles.formBox}>
-        {/* Logo dentro do formBox */}
-        <Image source={require('../../assets/colar roxo fundo.png')} style={styles.logo} />
+          <Text style={styles.title}>Cadastro</Text>
 
-        <Text style={styles.label}>Nome</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu nome"
-          value={name}
-          onChangeText={setName}
-        />
+          <View style={styles.formBox}>
+            <Image
+              source={require('../../assets/colar roxo fundo.png')}
+              style={styles.logo}
+            />
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu email"
-          value={email}
-          onChangeText={setEmail}
-        />
+            <Text style={styles.label}>Nome</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite seu nome"
+              value={name}
+              onChangeText={setName}
+            />
 
-        <Text style={styles.label}>Senha</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua senha"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite seu email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+            />
 
-        {error && <Text style={styles.error}>{error}</Text>}
+            <Text style={styles.label}>Senha</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite sua senha"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
 
-        <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-          <Text style={styles.buttonText}>Confirmar</Text>
-        </TouchableOpacity>
+            {error && <Text style={styles.error}>{error}</Text>}
 
-        <Text style={styles.registerText}>
-          Já tem conta?{' '}
-          <Text
-            style={styles.registerLink}
-            onPress={() => navigation.navigate('Login')}
-          >
-            Entrar
-          </Text>
-        </Text>
-      </View>
-    </View>
+            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+              <Text style={styles.buttonText}>Confirmar</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.registerText}>
+              Já tem conta?{' '}
+              <Text
+                style={styles.registerLink}
+                onPress={() => navigation.navigate('Login')}
+              >
+                Entrar
+              </Text>
+            </Text>
+          </View>
+
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -82,24 +115,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop: 50,
   },
   title: {
     fontSize: 26,
     fontWeight: '500',
     color: '#80608a',
-    marginTop: 70,
-    marginBottom: 0,
+    marginTop: 150,
   },
   formBox: {
-    position: 'absolute',
-    bottom: 0,
+    flex: 1,
     width: '100%',
     backgroundColor: '#d9d6d6',
     borderTopLeftRadius: 200,
     borderTopRightRadius: 200,
-    padding: 85, // diminui o padding para caber a imagem
+    padding: 85,
+    paddingBottom: 120, // evita o risco branco no final
     alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   logo: {
     width: 500,
