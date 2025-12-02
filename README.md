@@ -59,21 +59,6 @@ Aplicativo mobile desenvolvido com **React Native (Expo)** e **Supabase**, ofere
 
 ---
 
-##  Estrutura do Projeto
-
-```
-src/
- ├── screens/        # Telas principais
- ├── components/     # Componentes reutilizáveis
- ├── context/        # ThemeContext e funcionalidades globais
- ├── supabaseClient.js
- └── App.js
-```
-
----
-
-##  Como Rodar o Projeto
-
 ###  Clonar o repositório
 
 ```sh
@@ -107,57 +92,3 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 npx expo start
 ```
 
----
-
-##  Estrutura do Banco de Dados (Supabase)
-
-### **Tabela: produtos**
-
-| Campo     | Tipo    |
-| --------- | ------- |
-| id        | int     |
-| nome      | text    |
-| preco     | decimal |
-| material  | text    |
-| categoria | text    |
-| foto_url  | text    |
-
-### **Tabela: carrinho**
-
-| Campo      | Tipo |
-| ---------- | ---- |
-| id         | int  |
-| user_id    | uuid |
-| produto_id | int  |
-| quantidade | int  |
-
-### **Tabela: favoritos**
-
-| Campo      | Tipo |
-| ---------- | ---- |
-| id         | int  |
-| user_id    | uuid |
-| produto_id | int  |
-
----
-
-##  Melhorias Recentes
-
-* Campo para **número da residência** adicionado
-* Formulário de **Cartão de Crédito** dinâmico
-* Exibição automática de **QR Code PIX**
-* Melhorias no layout do Carrinho
-* Ajustes no tema e responsividade
-
----
-
-##  Screenshots (adicione suas imagens)
-
-```
-screenshots/
- ├── home.png
- ├── carrinho.png
- ├── pagamento.png
-```
-
-Este projeto é distribuído sob a licença **MIT**.
