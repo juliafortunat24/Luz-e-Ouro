@@ -143,12 +143,7 @@ const DadosPessoais = () => {
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Image
-            source={{
-              uri: "https://via.placeholder.com/30/8a2be2/ffffff?text=L",
-            }}
-            style={styles.logoImage}
-          />
+          
           <View>
             <Text style={styles.logoText}>Luz e Ouro</Text>
             <Text style={styles.logoSubtitle}>Joias e Acessórios</Text>
@@ -228,8 +223,8 @@ const DadosPessoais = () => {
           <Ionicons name="cart-outline" size={28} color="#aaa" />
         </TouchableOpacity>
 
-        <TouchableOpacity>
-          <Ionicons name="person" size={28} color={COLORS.primary} />
+       <TouchableOpacity onPress={() => navigation.navigate("PaginaPerfil")}>
+          <Ionicons name="person" size={28} color="#aaa" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>

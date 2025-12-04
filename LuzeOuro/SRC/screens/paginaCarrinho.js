@@ -1,4 +1,3 @@
-// CarrinhoScreen.jsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -15,12 +14,14 @@ import Icon from "react-native-vector-icons/Feather";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../supabaseClient";
 
-import { useTheme } from "./ThemeContext";   //  ⭐ IMPORTAÇÃO DO TEMA
+import { useTheme } from "./ThemeContext";
+import { enviarNotificacao, registerForPushNotifications } from "../notificationService";
+
 
 const CarrinhoScreen = ({ navigation }) => {
-  const { colors, isDark } = useTheme();   //  ⭐ PEGANDO CORES DO TEMA
+  const { colors, isDark } = useTheme();
 
-  // ======================= ITEM DO CARRINHO ==========================
+
   const ItemCarrinho = ({ item, onUpdateQuantity, onRemove }) => (
     <View style={[itemStyles.itemContainer, { borderBottomColor: colors.border }]}>
       <Image source={{ uri: item.imageUrl }} style={itemStyles.productImage} />
@@ -61,7 +62,6 @@ const CarrinhoScreen = ({ navigation }) => {
     </View>
   );
 
-  // ======================= CALCULO FRETE ============================
   const CalculoFrete = ({ cep, endereco, setCep, setEndereco, numeroResidencia, setNumeroResidencia, frete, onCalculate }) => (
     <View style={[GlobalStyles.card, { backgroundColor: colors.card }]}>
       <View style={freteStyles.header}>
@@ -134,6 +134,11 @@ const CarrinhoScreen = ({ navigation }) => {
     carregarCarrinho();
   }, []);
 
+  useEffect(() => {
+    registerForPushNotifications();
+  }, []);
+
+
   async function carregarCarrinho() {
     const { data: session } = await supabase.auth.getUser();
     if (!session || !session.user) return;
@@ -196,44 +201,37 @@ const CarrinhoScreen = ({ navigation }) => {
 
   async function finalizarCompra() {
 
-    // VERIFICAR CARRINHO
     if (carrinho.length === 0) {
       Alert.alert("Carrinho vazio", "Adicione itens antes de finalizar a compra.");
       return;
     }
 
-    // VERIFICAR CEP
     const cepDigits = cep.replace(/\D/g, "");
     if (cepDigits.length !== 8) {
       Alert.alert("CEP obrigatório", "Informe um CEP válido para calcular o frete.");
       return;
     }
 
-    // VERIFICAR FRETE CALCULADO
     if (frete === null) {
       Alert.alert("Frete não calculado", "Clique em 'Buscar' para calcular o frete.");
       return;
     }
 
-    // VERIFICAR ENDEREÇO
     if (!endereco.trim()) {
       Alert.alert("Endereço obrigatório", "Informe o endereço completo.");
       return;
     }
 
-    // VERIFICAR NÚMERO
     if (!numeroResidencia.trim()) {
       Alert.alert("Número obrigatório", "Informe o número da residência.");
       return;
     }
 
-    // VERIFICAR MÉTODO DE PAGAMENTO
     if (!pagamento) {
       Alert.alert("Pagamento obrigatório", "Selecione um método de pagamento.");
       return;
     }
 
-    // SE PAGAMENTO FOR CARTÃO, CAMPOS DEVEM SER PREENCHIDOS
     if (pagamento === "Cartão de Crédito") {
       if (!cartaoNumero.trim() || cartaoNumero.length < 12) {
         Alert.alert("Cartão inválido", "Informe um número de cartão válido.");
@@ -244,24 +242,46 @@ const CarrinhoScreen = ({ navigation }) => {
         return;
       }
       if (!cartaoCvv.trim() || cartaoCvv.length < 3) {
-        Alert.alert("CVV inválido", "Informe o código de segurança (CVV).");
+        Alert.alert("CVV inválido", "Informe o código de segurança.");
         return;
       }
     }
 
-    // FINALIZAÇÃO
-    Alert.alert("Pedido Finalizado!", "Seu pedido foi registrado com sucesso.");
+    await enviarNotificacao(
+      "Compra Finalizada! 🎉",
+      "Seu pedido foi registrado com sucesso."
+    );
 
+    // -----------------------------
+    // SALVAR PEDIDO NA TABELA
+    // -----------------------------
     const { data: session } = await supabase.auth.getUser();
     if (!session || !session.user) return;
 
-    // Apaga itens do carrinho
-    await supabase
-      .from("carrinho")
-      .delete()
-      .eq("user_id", session.user.id);
+    const novoPedido = {
+      user_id: session.user.id,
+      cep,
+      endereco: `${endereco}, Nº ${numeroResidencia}`,
+      metodo_pagamento: pagamento,
+      subtotal,
+      frete: frete === "Grátis" ? 0 : frete,
+      total,
+      status: "Pendente"
+    };
 
-    // Reseta estados
+    const { error: pedidoError } = await supabase
+      .from("pedidos")
+      .insert([novoPedido]);
+
+    if (pedidoError) {
+      console.log("ERRO AO CRIAR PEDIDO:", pedidoError);
+      Alert.alert("Erro", "Não foi possível registrar o pedido.");
+      return;
+    }
+
+    // limpar carrinho
+    await supabase.from("carrinho").delete().eq("user_id", session.user.id);
+
     setCarrinho([]);
     setCep("");
     setEndereco("");
@@ -271,11 +291,12 @@ const CarrinhoScreen = ({ navigation }) => {
     setCartaoNumero("");
     setCartaoValidade("");
     setCartaoCvv("");
+
+    Alert.alert("Pedido Finalizado", "Seu pedido foi enviado com sucesso!");
   }
 
 
 
-  // ======================= COMPONENTE PAGAMENTO ====================
   const MetodoPagamento = () => (
     <View style={[GlobalStyles.card, { backgroundColor: colors.card }]}>
       <Text style={[GlobalStyles.headerText, { color: colors.primary }]}>Pagamento</Text>
@@ -452,9 +473,7 @@ const CarrinhoScreen = ({ navigation }) => {
   );
 };
 
-/* =================================================================
-   ESTILOS
-   ================================================================= */
+
 const mainStyles = StyleSheet.create({
   scrollContent: { paddingVertical: 18 },
   header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 15, paddingTop: 45, paddingBottom: 12, borderBottomWidth: 1 },

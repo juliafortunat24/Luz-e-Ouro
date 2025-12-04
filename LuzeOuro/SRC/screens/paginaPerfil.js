@@ -126,7 +126,7 @@ export default function PaginaPerfil({ navigation }) {
           </View>
           <View style={[styles.statsRow, { borderTopColor: dividerColor }]}>
             <View style={styles.statBox}>
-              
+
             </View>
             <View style={styles.statBox}>
               <Text style={[styles.statCount, { color: colors.primary }]}>
@@ -141,13 +141,14 @@ export default function PaginaPerfil({ navigation }) {
         <View style={styles.quickAccessRow}>
           <TouchableOpacity
             style={[styles.quickAccessButton, { backgroundColor: colors.card }]}
-            onPress={() => navigation.navigate("PaginaInicial")}
+            onPress={() => navigation.navigate("PaginaHistorico")}
           >
-            <Ionicons name="gift-outline" size={24} color={colors.primary} />
+            <Ionicons name="time-outline" size={24} color={colors.primary} />
             <Text style={[styles.quickAccessText, { color: colors.primary }]}>
-              Comprar
+              Histórico
             </Text>
           </TouchableOpacity>
+
 
           <TouchableOpacity
             style={[styles.quickAccessButton, { backgroundColor: colors.card }]}

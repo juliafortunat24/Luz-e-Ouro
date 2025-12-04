@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { supabase } from './SRC/supabaseClient';
 
-// Importando o ThemeProvider
+// ThemeProvider
 import { ThemeProvider } from './SRC/screens/ThemeContext';
 
 import Login from './SRC/screens/login';
@@ -22,13 +22,15 @@ import CadastroProdutos from './SRC/screens/cadastroProdutos';
 import Catalogo from './SRC/screens/catalogo';
 import DadosPessoais from './SRC/screens/paginaDadosPessoais.js';
 
+// ⭐ NOVA PÁGINA ⭐
+import PaginaHistorico from './SRC/screens/paginaHistorico';
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-    // 🔹 Sempre desloga ao carregar o app (assim força o retorno à tela de login)
     const resetSession = async () => {
       await supabase.auth.signOut();
       setSession(null);
@@ -36,7 +38,6 @@ export default function App() {
 
     resetSession();
 
-    // Mesmo assim, escuta mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -45,7 +46,6 @@ export default function App() {
   }, []);
 
   return (
-    // Envolvendo toda a aplicação com o ThemeProvider
     <ThemeProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -64,6 +64,9 @@ export default function App() {
               <Stack.Screen name="PaginaAdmin" component={PaginaAdmin} />
               <Stack.Screen name="Catalogo" component={Catalogo} />
               <Stack.Screen name="DadosPessoais" component={DadosPessoais} />
+
+              {/* ⭐ NOVA ROTA ⭐ */}
+              <Stack.Screen name="PaginaHistorico" component={PaginaHistorico} />
             </>
           ) : (
             <>
